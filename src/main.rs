@@ -7,6 +7,7 @@ use fluid_quantity::FluidQuantity;
 use fluid_solver::FluidSolver;
 
 static INTRO_TEXT: &'static str = "Ponyo - a 2D, semi-Lagrangian fluid solver";
+const NUM_ITERATIONS: usize = 10;
 
 fn main() {
     println!("{}", INTRO_TEXT);
@@ -16,7 +17,6 @@ fn main() {
     let mut solver = FluidSolver::new(solver_dims);
 
     // Update solver
-    const NUM_ITERATIONS: usize = 10;
     for i in 0..NUM_ITERATIONS {
         // ...
     }

@@ -11,7 +11,7 @@ pub struct FluidQuantity {
 
 impl FluidQuantity {
     pub fn new(dims: Dimension) -> FluidQuantity {
-        // Initialize the data buffer
+        // Initialize the data buffer.
         let data = vec![0.0; dims.nx * dims.ny];
 
         FluidQuantity { dims, data }
