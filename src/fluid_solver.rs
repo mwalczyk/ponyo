@@ -3,9 +3,10 @@ use fluid_quantity::FluidQuantity;
 
 pub struct FluidSolver {
     dims: Dimension,
-    p: FluidQuantity, // Pressure field
-    u: FluidQuantity, // i-component of velocity field
-    v: FluidQuantity, // j-component of velocity field
+    p: FluidQuantity,   // Pressure field
+    u: FluidQuantity,   // i-component of velocity field
+    v: FluidQuantity,   // j-component of velocity field
+    density: f64        // The density of the fluid
 }
 
 impl FluidSolver {
@@ -24,7 +25,8 @@ impl FluidSolver {
             dims,
             p: FluidQuantity::new(dims),
             u: FluidQuantity::new(Dimension::new(dims.nx + 1, dims.ny)),
-            v: FluidQuantity::new(Dimension::new(dims.nx, dims.ny + 1))
+            v: FluidQuantity::new(Dimension::new(dims.nx, dims.ny + 1)),
+            density: 1.0
         }
     }
 
@@ -86,8 +88,8 @@ impl FluidSolver {
         // the width of an individual cell.
         let delta_x = 1.0 / (self.dims.nx as f64);
 
-        // The fluid should not move more than 5 grid cells per
-        // iteration.
+        // The fluid should not move more than MAX_GRID_CELL_TRAVERSAL
+        // grid cells per iteration.
         const MAX_GRID_CELL_TRAVERSAL: usize = 5;
         let delta_t = (MAX_GRID_CELL_TRAVERSAL as f64 * delta_x) / u_max;
 
@@ -95,14 +97,19 @@ impl FluidSolver {
     }
 
     pub fn update(&mut self) {
+
+        // 0. Update the hash table of marker cells (i.e. cells that
+        // currently contain fluid): can be ignored initially
+        // TODO
+
         // 1. Determine a good time step `delta_t`
         let delta_t = self.determine_time_step();
 
-
-        // 2. Update the velocity field (self-advection)
+        // 2. Update the velocity field (self-advection) via backwards
+        // particle trace
         // TODO
 
-        // 3. Add body forces (i.e. gravity)
+        // 3. Add body forces (i.e. gravity): can be ignored initially
         // TODO
 
         // 4. Project the velocity field to obey the incompressibility condition

@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="354a1aca-2eca-41ff-bdd0-087474141b05" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/dictionaries/mike.xml" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/src/fluid_quantity.rs" afterPath="$PROJECT_DIR$/src/fluid_quantity.rs" />
       <change beforePath="$PROJECT_DIR$/src/fluid_solver.rs" afterPath="$PROJECT_DIR$/src/fluid_solver.rs" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" afterPath="$PROJECT_DIR$/src/main.rs" />
+      <change beforePath="$PROJECT_DIR$/src/helpers.rs" afterPath="$PROJECT_DIR$/src/helpers.rs" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -19,21 +16,21 @@
     <splitter split-orientation="horizontal" split-proportion="0.42865396">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="fluid_quantity.rs" pinned="false" current-in-tab="true">
+          <file leaf-file-name="fluid_quantity.rs" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/fluid_quantity.rs">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="95">
-                  <caret line="5" column="0" lean-forward="true" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+                  <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="main.rs" pinned="false" current-in-tab="false">
+          <file leaf-file-name="main.rs" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/main.rs">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="437">
-                  <caret line="23" column="0" lean-forward="true" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+                <state relative-caret-position="152">
+                  <caret line="8" column="47" lean-forward="false" selection-start-line="8" selection-start-column="47" selection-end-line="8" selection-end-column="47" />
                   <folding />
                 </state>
               </provider>
@@ -46,9 +43,24 @@
           <file leaf-file-name="fluid_solver.rs" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/fluid_solver.rs">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1326">
-                  <caret line="95" column="0" lean-forward="true" selection-start-line="95" selection-start-column="0" selection-end-line="95" selection-end-column="0" />
+                <state relative-caret-position="1554">
+                  <caret line="104" column="50" lean-forward="true" selection-start-line="104" selection-start-column="50" selection-end-line="104" selection-end-column="50" />
                   <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="helpers.rs" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/helpers.rs">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="361">
+                  <caret line="19" column="1" lean-forward="true" selection-start-line="19" selection-start-column="1" selection-end-line="19" selection-end-column="1" />
+                  <folding>
+                    <element signature="e#153#154#0" expanded="true" />
+                    <element signature="e#187#188#0" expanded="true" />
+                    <element signature="e#235#236#0" expanded="true" />
+                    <element signature="e#245#246#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -65,8 +77,9 @@
       <list>
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/src/main.rs" />
-        <option value="$PROJECT_DIR$/src/fluid_solver.rs" />
         <option value="$PROJECT_DIR$/src/fluid_quantity.rs" />
+        <option value="$PROJECT_DIR$/src/helpers.rs" />
+        <option value="$PROJECT_DIR$/src/fluid_solver.rs" />
       </list>
     </option>
   </component>
@@ -295,26 +308,39 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/fluid_quantity.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="95">
+          <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="437">
-          <caret line="23" column="0" lean-forward="true" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+        <state relative-caret-position="152">
+          <caret line="8" column="47" lean-forward="false" selection-start-line="8" selection-start-column="47" selection-end-line="8" selection-end-column="47" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/helpers.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="361">
+          <caret line="19" column="1" lean-forward="true" selection-start-line="19" selection-start-column="1" selection-end-line="19" selection-end-column="1" />
+          <folding>
+            <element signature="e#153#154#0" expanded="true" />
+            <element signature="e#187#188#0" expanded="true" />
+            <element signature="e#235#236#0" expanded="true" />
+            <element signature="e#245#246#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/fluid_solver.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1326">
-          <caret line="95" column="0" lean-forward="true" selection-start-line="95" selection-start-column="0" selection-end-line="95" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/fluid_quantity.rs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="95">
-          <caret line="5" column="0" lean-forward="true" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+        <state relative-caret-position="1554">
+          <caret line="104" column="50" lean-forward="true" selection-start-line="104" selection-start-column="50" selection-end-line="104" selection-end-column="50" />
           <folding />
         </state>
       </provider>
