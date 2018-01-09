@@ -42,12 +42,24 @@ impl FluidSolver {
         // TODO
     }
 
-    fn velocity_at(&self, i: usize, j: usize) {
-        // Returns the velocity at grid cell (i, j). Since we are
-        // using a staggered grid, the velocity vector must be
-        // reconstructed by performing linear interpolations of
-        // the surrounding grid cells.
-        // TODO
+    fn centered_velocity_at(&self, i: usize, j: usize) -> Vector {
+        // Returns the velocity at the center of grid cell (i, j).
+        // Since we are using a staggered grid, the velocity
+        // vector must be reconstructed by performing a linear
+        // interpolation of the surrounding grid cells.
+        //
+        // In the text, we calculate the value of a quantity that
+        // is staggered along the x-axis as follows:
+        //      u(i, j) = (u(i - 0.5, j) + u(i + 0.5, j)) / 2
+        //
+        // However, in code, we represent u(i, j) as:
+        //      U(i - 0.5, j + 0.0)
+        //
+        // Which leads to the calculations below.
+        let u_interp = (self.u.at(i, j) + self.u.at(i + 1, j)) * 0.5;
+        let v_interp = (self.v.at(i, j) + self.v.at(i, j + 1)) * 0.5;
+
+        Vector::new(u_interp, v_interp)
     }
 
     fn project(&mut self, delta_t: f64) {
@@ -94,11 +106,11 @@ impl FluidSolver {
         for i in 0..self.u.dims.nx {
             for j in 0..self.u.dims.ny {
                 let u_component = self.u.at(i, j);
-                let v_component = self.u.at(i, j);
+                let v_component = self.v.at(i, j);
                 let velocity = Vector::new(u_component, v_component);
 
                 if velocity.length() > u_max {
-                    u_max = velocity;
+                    u_max = velocity.length();
                 }
             }
         }
@@ -122,8 +134,9 @@ impl FluidSolver {
 
         // 2. Update the velocity field (self-advection) via backwards
         // particle trace
-        // TODO
-
+        let u_next = FluidQuantity::new(self.dims.expand(1, 0), Staggered::OffsetX);
+        let v_next = FluidQuantity::new(self.dims.expand(0, 1), Staggered::OffsetY);
+    
         // 3. Apply body forces (i.e. gravity): can be ignored initially
         // TODO
 
