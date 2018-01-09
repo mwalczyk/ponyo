@@ -1,12 +1,15 @@
-use helpers::Dimension;
-use fluid_quantity::FluidQuantity;
+use std::f64;
+
+use helpers::{Dimension, Vector};
+use fluid_quantity::{Staggered, FluidQuantity};
 
 pub struct FluidSolver {
     dims: Dimension,
     p: FluidQuantity,   // Pressure field
     u: FluidQuantity,   // i-component of velocity field
     v: FluidQuantity,   // j-component of velocity field
-    density: f64        // The density of the fluid
+    d: FluidQuantity,   // The density field of the fluid
+    grid_cell_size: f64 // The size of each grid cell
 }
 
 impl FluidSolver {
@@ -16,22 +19,26 @@ impl FluidSolver {
         // The u and v-components of the velocity field are one unit
         // larger along their respective dimensions to form a staggered
         // MAC (marker-and-cell) grid.
-        //
-        // Syntactically, this means:
-        // p(i, j) = P(i, j)
-        // u(i, j) = U(i - 1/2, j)
-        // v(i, j) = V(i, j - 1/2)
         FluidSolver {
             dims,
-            p: FluidQuantity::new(dims),
-            u: FluidQuantity::new(Dimension::new(dims.nx + 1, dims.ny)),
-            v: FluidQuantity::new(Dimension::new(dims.nx, dims.ny + 1)),
-            density: 1.0
+            p: FluidQuantity::new(dims, Staggered::None),
+            u: FluidQuantity::new(dims.expand(1, 0), Staggered::OffsetX),
+            v: FluidQuantity::new(dims.expand(0, 1), Staggered::OffsetY),
+            d: FluidQuantity::new(dims, Staggered::None),
+            grid_cell_size: 1.0 / (dims.nx as f64)
         }
     }
 
+    pub fn to_image(&self) {
+        // Saves out an image derived from the solver's density
+        // field.
+        // TODO
+    }
+
     fn init() {
-        // Create an initial divergence-free velocity field `u`.
+        // Create an initial divergence-free velocity field with
+        // components `u` and `v`. Initialize the pressure field
+        // `p` and density field `d`.
         // TODO
     }
 
@@ -43,14 +50,14 @@ impl FluidSolver {
         // TODO
     }
 
-    fn project(&mut self, delta_t: f64, u: &mut FluidQuantity) {
+    fn project(&mut self, delta_t: f64) {
         // Calculate and apply just the right amount of pressure to
         // make `u` divergence-free.
         // TODO
     }
 
 
-    fn advect(&mut self, u: &FluidQuantity, delta_t: f64, q: &mut FluidQuantity) {
+    fn advect(&mut self, delta_t: f64, q: &mut FluidQuantity) {
         // Advect quantity `q` through the velocity field `u` for
         // a time interval `delta_t`. This should ONLY be called
         // with a divergence-free velocity field `u`, i.e. one that
@@ -80,18 +87,26 @@ impl FluidSolver {
 
     fn determine_time_step(&self) -> f64 {
         // Find the length of the largest velocity vector in our
-        // field `u`.
+        // field `u`. Is this supposed to be interpolated?
         // TODO
-        let u_max = 0.0;
+        let mut u_max = f64::MIN_POSITIVE;
 
-        // Treat each pixel as a grid cell: here `delta_x` represents
-        // the width of an individual cell.
-        let delta_x = 1.0 / (self.dims.nx as f64);
+        for i in 0..self.u.dims.nx {
+            for j in 0..self.u.dims.ny {
+                let u_component = self.u.at(i, j);
+                let v_component = self.u.at(i, j);
+                let velocity = Vector::new(u_component, v_component);
+
+                if velocity.length() > u_max {
+                    u_max = velocity;
+                }
+            }
+        }
 
         // The fluid should not move more than MAX_GRID_CELL_TRAVERSAL
         // grid cells per iteration.
         const MAX_GRID_CELL_TRAVERSAL: usize = 5;
-        let delta_t = (MAX_GRID_CELL_TRAVERSAL as f64 * delta_x) / u_max;
+        let delta_t = (MAX_GRID_CELL_TRAVERSAL as f64 * self.grid_cell_size) / u_max;
 
         delta_t
     }
@@ -109,10 +124,18 @@ impl FluidSolver {
         // particle trace
         // TODO
 
-        // 3. Add body forces (i.e. gravity): can be ignored initially
+        // 3. Apply body forces (i.e. gravity): can be ignored initially
         // TODO
 
-        // 4. Project the velocity field to obey the incompressibility condition
+        // 4. Project the velocity field to obey the incompressibility condition:
+        //      a. Setup the matrix A of coefficients
+        //      b. Setup the vector b, which contains `div(u)` for each grid cell
+        //      c. Use the Gauss-Siedel method to solve for the pressures
+        //      d. Apply the pressure:
+        //         u' = u - delta_t / (density * grid_cell_size) * grad(pressure)
+        //                             ^^^^^^^
+        //         Note that the `density` term above was a constant (1.0) before.
+        //         How does this work when the density is a field?
         // TODO
     }
 }
