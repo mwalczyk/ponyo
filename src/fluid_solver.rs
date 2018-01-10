@@ -2,7 +2,7 @@ extern crate image;
 
 use std::f64;
 
-use helpers::{Dimension, Vector};
+use helpers::{Dimension, Vector, lerp};
 use fluid_quantity::{Staggered, FluidQuantity};
 
 use image::{GenericImage, ImageBuffer};
@@ -29,7 +29,7 @@ impl FluidSolver {
             u: FluidQuantity::new(dims.expand(1, 0), Staggered::OffsetX),
             v: FluidQuantity::new(dims.expand(0, 1), Staggered::OffsetY),
             d: FluidQuantity::new(dims, Staggered::None),
-            grid_cell_size: 1.0 / (dims.nx.max(dims.ny) as f64)
+            grid_cell_size: 1.0 / (dims.nx.min(dims.ny) as f64)
         }
     }
 
@@ -56,6 +56,9 @@ impl FluidSolver {
         // Create an initial divergence-free velocity field with
         // components `u` and `v`. Initialize the pressure field
         // `p` and density field `d`.
+        //
+        // Maybe set a region to 1.0 density, with a vertical
+        // velocity of 3.0 or so?
         // TODO
     }
 
@@ -94,35 +97,11 @@ impl FluidSolver {
 
     fn project(&mut self, delta_t: f64) {
         // Calculate and apply just the right amount of pressure to
-        // make `u` divergence-free.
+        // make the velocity field divergence-free.
         // TODO
     }
 
     fn advect(&mut self, u: &mut FluidQuantity, delta_t: f64, q: &mut FluidQuantity) {
-        // Advect quantity `q` through the velocity field for
-        // a time interval `delta_t`. This should ONLY be called
-        // with a divergence-free velocity field, i.e. one that
-        // meets the incompressibility constraint.
-        //
-        // Here, we take a semi-Lagrangian approach. We run time
-        // "backwards" to find the start point of a particle that
-        // ends up at each grid cell. We do this as follows:
-        //
-        //              x_p = x_g - delta_t * u(x_g)
-        //
-        // which gives us `x_p`, the previous position of the
-        // hypothetical particle. Because this point will not be
-        // on the grid, we simply interpolate the old value of `q`
-        // from the old values on the grid around `x_p`.
-        //
-        // Note that we need to use the appropriate averaged
-        // velocity to estimate particle trajectories.
-        //
-        // This semi-Lagrangian approach is unconditionally
-        // stable: we can't create larger or smaller values of `q`
-        // than were already present in the previous time step
-        // since we are performing linear/bilinear/trilinear
-        // interpolations.
         // TODO
     }
 
@@ -150,11 +129,40 @@ impl FluidSolver {
     }
 
     fn backwards_trace(&mut self, delta_t: f64) {
+        // Advect quantity `q` through the velocity field for
+        // a time interval `delta_t`. This should ONLY be called
+        // with a divergence-free velocity field, i.e. one that
+        // meets the incompressibility constraint.
+        //
+        // Here, we take a semi-Lagrangian approach. We run time
+        // "backwards" to find the start point of a particle that
+        // ends up at each grid cell. We do this as follows:
+        //
+        //              x_p = x_g - delta_t * u(x_g)
+        //
+        // which gives us `x_p`, the previous position of the
+        // hypothetical particle. Because this point will not be
+        // on the grid, we simply interpolate the old value of `q`
+        // from the old values on the grid around `x_p`.
+        //
+        // Note that we need to use the appropriate averaged
+        // velocity to estimate particle trajectories.
+        //
+        // This semi-Lagrangian approach is unconditionally
+        // stable: we can't create larger or smaller values of `q`
+        // than were already present in the previous time step
+        // since we are performing linear/bilinear/trilinear
+        // interpolations.
+
+        // Advection cannot happen in-place: we need to create new buffers
         let mut u_next = FluidQuantity::new(self.dims.expand(1, 0), Staggered::OffsetX);
         let mut v_next = FluidQuantity::new(self.dims.expand(0, 1), Staggered::OffsetY);
 
-        for i in 0..self.u.dims.nx {
-            for j in 0..self.u.dims.ny {
+        // Iterate over all grid centers
+        for i in 0..self.dims.nx {
+            for j in 0..self.dims.ny {
+
+                // The starting position of the particle
                 let position = Vector::new(i as f64, j as f64);
 
                 // Get the velocity vector at the center of cell (i, j).
@@ -162,22 +170,48 @@ impl FluidSolver {
 
                 // Trace backwards using Runge-Kutta order two (RK2) interpolation.
                 let position_midpoint = position - velocity * 0.5 * delta_t;
+                let mut oi = position_midpoint.x;
+                let mut oj = position_midpoint.y;
 
-                // The grid cell that the traced particle lies in.
-                let i_midpoint = position_midpoint.x.floor();
-                let j_midpoint = position_midpoint.y.floor();
-                let oi_midpoint = position_midpoint.x - i_midpoint;
-                let oj_midpoint = position_midpoint.y - j_midpoint;
+                // Fluid quantities that are staggered must be correctly handled here
+                let staggered = false;
+                if staggered {
+                    oi += 0.5;
+                    oj += 0.5;
+                }
+
+                // Clamp
+                oi = oi.max(0.0).min(self.dims.nx as f64);
+                oj = oj.max(0.0).min(self.dims.ny as f64);
+
+
+                // Linear interpolation of the fluid quantity via the four surrounding
+                // grid cells:
+                //
+                //             |
+                //      x_01   |   x_11
+                //             |
+                //      ---------------
+                //             |
+                //      x_00   |   x_10
+                //             |
+                //
+                // Based on this diagram:
+                //      a = lerp(x_00, x_10, .. )
+                //      b = lerp(x_01, x_11, .. )
+                //      c = lerp(a, b, .. )
+                let a = lerp(self.d.at(i, j), self.d.at(i + 1, j), oi);
+                let b = lerp(self.d.at(i, j + 1), self.d.at(i + 1, j + 1), oi);
+                let c = lerp(a, b, oj);
 
                 // Get the velocity vector at this position.
-                let velocity_traced = self.get_interpolated_velocity(i_midpoint as usize,
-                                                                            j_midpoint as usize,
-                                                                            oi_midpoint,
-                                                                            oj_midpoint);
+//                let velocity_traced = self.get_interpolated_velocity(i_midpoint as usize,
+//                                                                            j_midpoint as usize,
+//                                                                            oi,
+//                                                                            oj);
 
-                // Set the velocity vector at cell (i, j) in the new FluidQuantity buffer.
-                u_next.set(i, j, velocity_traced.x);
-                v_next.set(i, j, velocity_traced.y);
+                // Set the fluid quantity at cell (i, j) in the new FluidQuantity buffer.
+                // TODO
             }
         }
 
