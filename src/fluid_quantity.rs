@@ -1,5 +1,6 @@
 use helpers::{Dimension, Vector};
 
+#[derive(Copy, Clone)]
 pub enum Staggered {
     None,
     OffsetX,
@@ -19,6 +20,7 @@ impl Staggered {
 // Consider making this quantity a generic that
 // must implement a trait like "Differentiable"
 // ...
+#[derive(Clone)]
 pub struct FluidQuantity {
     // The width and height of the grid
     pub dims: Dimension,
@@ -40,31 +42,15 @@ impl FluidQuantity {
         }
     }
 
-    pub fn at(&self, i: usize, j: usize) -> f64 {
+    pub fn set(&mut self, i: usize, j: usize, v: f64) {
         assert!(i > 0 && j > 0 && i < self.dims.nx && j < self.dims.ny);
-        // The MAC grid method discretizes space into a grid of cells.
-        // Each cell has a pressure `p` defined at its center. It also
-        // has a velocity `u` (with components `u` and `v`), but the
-        // components are placed at the centers of 2 of the cell faces:
-        // `u` on the x-min face and `v` on the y-min face.
-        //
-        // Syntactically, this means:
-        // p(i, j) = P(i + 0.0, j + 0.0)
-        // u(i, j) = U(i - 0.5, j + 0.0)
-        // v(i, j) = V(i + 0.0, j - 0.5)
-        //
-        // For a quantity that is staggered along the x-axis, we can
-        // reconstruct the value at the grid center as follows:
-        // u(i, j) = (u(i - 0.5, j) + u(i + 0.5, j)) / 2
-        //
-        // A similar process applies to a quantity that is staggered
-        // along the y-axis.
-        let offset = self.staggered.as_offset();
-
-        self.data[i + self.dims.nx * j]
+        self.data[i + self.dims.nx * j] = v;
     }
 
-    pub fn vector_at(&self, i: usize, j: usize)
+    pub fn at(&self, i: usize, j: usize) -> f64 {
+        assert!(i > 0 && j > 0 && i < self.dims.nx && j < self.dims.ny);
+        self.data[i + self.dims.nx * j]
+    }
 
     // Returns the gradient of the fluid quantity at grid cell (i, j)
     pub fn grad(&self, i: usize, j: usize) -> Vector {

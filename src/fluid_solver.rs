@@ -1,7 +1,11 @@
+extern crate image;
+
 use std::f64;
 
 use helpers::{Dimension, Vector};
 use fluid_quantity::{Staggered, FluidQuantity};
+
+use image::{GenericImage, ImageBuffer};
 
 pub struct FluidSolver {
     dims: Dimension,
@@ -25,14 +29,27 @@ impl FluidSolver {
             u: FluidQuantity::new(dims.expand(1, 0), Staggered::OffsetX),
             v: FluidQuantity::new(dims.expand(0, 1), Staggered::OffsetY),
             d: FluidQuantity::new(dims, Staggered::None),
-            grid_cell_size: 1.0 / (dims.nx as f64)
+            grid_cell_size: 1.0 / (dims.nx.max(dims.ny) as f64)
         }
     }
 
-    pub fn to_image(&self) {
+    pub fn to_image(&self, path: &str) {
         // Saves out an image derived from the solver's density
         // field.
-        // TODO
+        let center = Vector::new(self.d.dims.nx as f64 * 0.5,
+                                        self.d.dims.ny as f64 * 0.5);
+
+        let image = ImageBuffer::from_fn(self.d.dims.nx as u32, self.d.dims.ny as u32, |x, y| {
+            let position = Vector::new(x as f64, y as f64);
+
+            if position.distance(center) < 100.0 {
+                image::Luma([0u8])
+            } else {
+                image::Luma([255u8])
+            }
+        });
+
+        image.save(path).unwrap();
     }
 
     fn init() {
@@ -42,24 +59,37 @@ impl FluidSolver {
         // TODO
     }
 
-    fn centered_velocity_at(&self, i: usize, j: usize) -> Vector {
-        // Returns the velocity at the center of grid cell (i, j).
-        // Since we are using a staggered grid, the velocity
-        // vector must be reconstructed by performing a linear
-        // interpolation of the surrounding grid cells.
+    fn get_interpolated_velocity(&self, i: usize, j: usize, oi: f64, oj: f64) -> Vector {
+        // The MAC grid method discretizes space into a grid of cells.
+        // Each cell has a pressure `p` defined at its center. It also
+        // has a velocity with components `u` and `v`, but the
+        // components are placed at the centers of 2 of the cell faces:
+        // `u` on the x-min face and `v` on the y-min face.
         //
-        // In the text, we calculate the value of a quantity that
-        // is staggered along the x-axis as follows:
-        //      u(i, j) = (u(i - 0.5, j) + u(i + 0.5, j)) / 2
+        // However, in code, we use integer indices so that:
+        //      p(i, j) = P(i + 0.0, j + 0.0)
+        //      u(i, j) = U(i - 0.5, j + 0.0)
+        //      v(i, j) = V(i + 0.0, j - 0.5)
         //
-        // However, in code, we represent u(i, j) as:
+        // This function returns the velocity vector within a particular
+        // grid cell (i, j). Since we are using a staggered grid, the
+        // velocity vector must be reconstructed by performing a linear
+        // interpolation of the surrounding grid cells. To retrieve the
+        // velocity vector at the cell center, `oi` and `oj` should be
+        // 0.5.
+        //
+        // Note that in the text, we calculate the value of a quantity
+        // that is staggered along the x-axis as follows:
+        //      u(i, j) = (u(i - 0.5, j) + u(i + 0.5, j)) * 0.5
+        //
+        // In code, we represent u(i, j) as:
         //      U(i - 0.5, j + 0.0)
         //
         // Which leads to the calculations below.
-        let u_interp = (self.u.at(i, j) + self.u.at(i + 1, j)) * 0.5;
-        let v_interp = (self.v.at(i, j) + self.v.at(i, j + 1)) * 0.5;
+        let u_inter = self.u.at(i, j) * (1.0 - oi) + self.u.at(i + 1, j) * oi;
+        let v_inter = self.v.at(i, j) * (1.0 - oj) + self.v.at(i, j + 1) * oj;
 
-        Vector::new(u_interp, v_interp)
+        Vector::new(u_inter, v_inter)
     }
 
     fn project(&mut self, delta_t: f64) {
@@ -68,11 +98,10 @@ impl FluidSolver {
         // TODO
     }
 
-
-    fn advect(&mut self, delta_t: f64, q: &mut FluidQuantity) {
-        // Advect quantity `q` through the velocity field `u` for
+    fn advect(&mut self, u: &mut FluidQuantity, delta_t: f64, q: &mut FluidQuantity) {
+        // Advect quantity `q` through the velocity field for
         // a time interval `delta_t`. This should ONLY be called
-        // with a divergence-free velocity field `u`, i.e. one that
+        // with a divergence-free velocity field, i.e. one that
         // meets the incompressibility constraint.
         //
         // Here, we take a semi-Lagrangian approach. We run time
@@ -98,19 +127,16 @@ impl FluidSolver {
     }
 
     fn determine_time_step(&self) -> f64 {
-        // Find the length of the largest velocity vector in our
-        // field `u`. Is this supposed to be interpolated?
-        // TODO
-        let mut u_max = f64::MIN_POSITIVE;
+        // Find the length of the largest velocity vector.
+        let mut velocity_norm_max = f64::NEG_INFINITY;
 
         for i in 0..self.u.dims.nx {
             for j in 0..self.u.dims.ny {
-                let u_component = self.u.at(i, j);
-                let v_component = self.v.at(i, j);
-                let velocity = Vector::new(u_component, v_component);
+                // Get the velocity vector at the center of cell (i, j).
+                let velocity = self.get_interpolated_velocity(i, j, 0.5, 0.5);
 
-                if velocity.length() > u_max {
-                    u_max = velocity.length();
+                if velocity.length() > velocity_norm_max {
+                    velocity_norm_max = velocity.length();
                 }
             }
         }
@@ -118,15 +144,51 @@ impl FluidSolver {
         // The fluid should not move more than MAX_GRID_CELL_TRAVERSAL
         // grid cells per iteration.
         const MAX_GRID_CELL_TRAVERSAL: usize = 5;
-        let delta_t = (MAX_GRID_CELL_TRAVERSAL as f64 * self.grid_cell_size) / u_max;
+        let delta_t = (MAX_GRID_CELL_TRAVERSAL as f64 * self.grid_cell_size) / velocity_norm_max;
 
         delta_t
+    }
+
+    fn backwards_trace(&mut self, delta_t: f64) {
+        let mut u_next = FluidQuantity::new(self.dims.expand(1, 0), Staggered::OffsetX);
+        let mut v_next = FluidQuantity::new(self.dims.expand(0, 1), Staggered::OffsetY);
+
+        for i in 0..self.u.dims.nx {
+            for j in 0..self.u.dims.ny {
+                let position = Vector::new(i as f64, j as f64);
+
+                // Get the velocity vector at the center of cell (i, j).
+                let velocity = self.get_interpolated_velocity(i, j, 0.5, 0.5);
+
+                // Trace backwards using Runge-Kutta order two (RK2) interpolation.
+                let position_midpoint = position - velocity * 0.5 * delta_t;
+
+                // The grid cell that the traced particle lies in.
+                let i_midpoint = position_midpoint.x.floor();
+                let j_midpoint = position_midpoint.y.floor();
+                let oi_midpoint = position_midpoint.x - i_midpoint;
+                let oj_midpoint = position_midpoint.y - j_midpoint;
+
+                // Get the velocity vector at this position.
+                let velocity_traced = self.get_interpolated_velocity(i_midpoint as usize,
+                                                                            j_midpoint as usize,
+                                                                            oi_midpoint,
+                                                                            oj_midpoint);
+
+                // Set the velocity vector at cell (i, j) in the new FluidQuantity buffer.
+                u_next.set(i, j, velocity_traced.x);
+                v_next.set(i, j, velocity_traced.y);
+            }
+        }
+
+        self.u = u_next;
+        self.v = v_next;
     }
 
     pub fn update(&mut self) {
 
         // 0. Update the hash table of marker cells (i.e. cells that
-        // currently contain fluid): can be ignored initially
+        // currently contain fluid): can be ignored initially.
         // TODO
 
         // 1. Determine a good time step `delta_t`
@@ -134,9 +196,8 @@ impl FluidSolver {
 
         // 2. Update the velocity field (self-advection) via backwards
         // particle trace
-        let u_next = FluidQuantity::new(self.dims.expand(1, 0), Staggered::OffsetX);
-        let v_next = FluidQuantity::new(self.dims.expand(0, 1), Staggered::OffsetY);
-    
+        self.backwards_trace(delta_t);
+
         // 3. Apply body forces (i.e. gravity): can be ignored initially
         // TODO
 

@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::ops::{Add, Sub, Mul};
 
 #[derive(Copy, Clone)]
 pub struct Dimension {
@@ -42,13 +42,36 @@ impl Vector {
     pub fn dot(&self, other: &Vector) -> f64 {
         self.x * other.x + self.y * other.y
     }
+
+    pub fn distance(&self, b: Vector) -> f64 {
+        (*self - b).length()
+    }
 }
 
+// Vector-vector addition
 impl Add for Vector {
     type Output = Vector;
 
     fn add(self, other: Vector) -> Vector {
         Vector::new(self.x + other.x, self.y + other.y)
+    }
+}
+
+// Vector-vector subtraction
+impl Sub for Vector {
+    type Output = Vector;
+
+    fn sub(self, other: Vector) -> Vector {
+        Vector::new(self.x - other.x, self.y - other.y)
+    }
+}
+
+// Vector-scalar multiplication
+impl Mul<f64> for Vector {
+    type Output = Vector;
+
+    fn mul(self, scalar: f64) -> Vector {
+        Vector::new(self.x * scalar, self.y * scalar)
     }
 }
 

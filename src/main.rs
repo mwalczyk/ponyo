@@ -1,3 +1,5 @@
+extern crate image;
+
 mod helpers;
 mod fluid_quantity;
 mod fluid_solver;
