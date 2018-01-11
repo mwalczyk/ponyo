@@ -73,6 +73,11 @@ impl FluidSolver {
         // TODO
     }
 
+    fn add_source(&mut self) {
+        // Adds fluid density at some user-specified region.
+        // TODO
+    }
+
     fn get_interpolated_velocity(&self, i: usize, j: usize, oi: f64, oj: f64) -> Vector {
         // This function returns the velocity vector within a particular
         // grid cell (i, j). Since we are using a staggered grid, the
