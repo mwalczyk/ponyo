@@ -23,6 +23,17 @@ impl FluidSolver {
         // The u and v-components of the velocity field are one unit
         // larger along their respective dimensions to form a staggered
         // MAC (marker-and-cell) grid.
+        //
+        // The MAC grid method discretizes space into a grid of cells.
+        // Each cell has a pressure `p` defined at its center. It also
+        // has a velocity with components `u` and `v`, but the
+        // components are placed at the centers of 2 of the cell faces:
+        // `u` on the x-min face and `v` on the y-min face.
+        //
+        // However, in code, we use integer indices so that:
+        //      p(i, j) = P(i + 0.0, j + 0.0)
+        //      u(i, j) = U(i - 0.5, j + 0.0)
+        //      v(i, j) = V(i + 0.0, j - 0.5)
         FluidSolver {
             dims,
             p: FluidQuantity::new(dims, Staggered::None),
@@ -63,17 +74,6 @@ impl FluidSolver {
     }
 
     fn get_interpolated_velocity(&self, i: usize, j: usize, oi: f64, oj: f64) -> Vector {
-        // The MAC grid method discretizes space into a grid of cells.
-        // Each cell has a pressure `p` defined at its center. It also
-        // has a velocity with components `u` and `v`, but the
-        // components are placed at the centers of 2 of the cell faces:
-        // `u` on the x-min face and `v` on the y-min face.
-        //
-        // However, in code, we use integer indices so that:
-        //      p(i, j) = P(i + 0.0, j + 0.0)
-        //      u(i, j) = U(i - 0.5, j + 0.0)
-        //      v(i, j) = V(i + 0.0, j - 0.5)
-        //
         // This function returns the velocity vector within a particular
         // grid cell (i, j). Since we are using a staggered grid, the
         // velocity vector must be reconstructed by performing a linear
@@ -170,20 +170,27 @@ impl FluidSolver {
 
                 // Trace backwards using Runge-Kutta order two (RK2) interpolation.
                 let position_midpoint = position - velocity * 0.5 * delta_t;
-                let mut oi = position_midpoint.x;
-                let mut oj = position_midpoint.y;
+
+                // Get the fractional part of the particle's position vector
+                let mut oi = position_midpoint.x - position_midpoint.x.floor();
+                let mut oj = position_midpoint.y - position_midpoint.y.floor();
+
+                // The (integer) indices of the grid cell that this particle was traced from
+                let i_mid = position_midpoint.x.floor() as usize;
+                let j_mid = position_midpoint.y.floor() as usize;
 
                 // Fluid quantities that are staggered must be correctly handled here
-                let staggered = false;
-                if staggered {
-                    oi += 0.5;
-                    oj += 0.5;
+                let staggered = Staggered::None;
+
+                match staggered {
+                    Staggered::OffsetX => oi += 0.5,
+                    Staggered::OffsetY => oj += 0.5,
+                    _ => ()
                 }
 
                 // Clamp
                 oi = oi.max(0.0).min(self.dims.nx as f64);
                 oj = oj.max(0.0).min(self.dims.ny as f64);
-
 
                 // Linear interpolation of the fluid quantity via the four surrounding
                 // grid cells:
@@ -197,18 +204,15 @@ impl FluidSolver {
                 //             |
                 //
                 // Based on this diagram:
-                //      a = lerp(x_00, x_10, .. )
-                //      b = lerp(x_01, x_11, .. )
-                //      c = lerp(a, b, .. )
-                let a = lerp(self.d.at(i, j), self.d.at(i + 1, j), oi);
-                let b = lerp(self.d.at(i, j + 1), self.d.at(i + 1, j + 1), oi);
+                //      a = lerp(x_00, x_10, .. )   <-- horizontal, bottom
+                //      b = lerp(x_01, x_11, .. )   <-- horizontal, top
+                //      c = lerp(a, b, .. )         <-- vertical
+                let a = lerp(self.d.at(i_mid, j_mid), self.d.at(i_mid + 1, j_mid), oi);
+                let b = lerp(self.d.at(i_mid, j_mid + 1), self.d.at(i_mid + 1, j_mid + 1), oi);
                 let c = lerp(a, b, oj);
 
-                // Get the velocity vector at this position.
-//                let velocity_traced = self.get_interpolated_velocity(i_midpoint as usize,
-//                                                                            j_midpoint as usize,
-//                                                                            oi,
-//                                                                            oj);
+                // Set the velocity components at cell (i, j) in the new FluidQuantity buffers.
+                // TODO
 
                 // Set the fluid quantity at cell (i, j) in the new FluidQuantity buffer.
                 // TODO
