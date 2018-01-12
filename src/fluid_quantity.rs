@@ -18,15 +18,10 @@ impl Staggered {
 }
 
 #[derive(Copy, Clone)]
-pub enum CellLabel {
-    Fluid,              // A grid cell containing fluid
-    Solid,              // A grid cell at a solid boundary (i.e. wall)
-    Empty{ p: f64 }     // A grid cell containing air, with pressure `p`
-}
-
-pub struct Cell {
-    label: CellLabel,
-    value: f64
+pub enum Cell {
+    Fluid{ q: f64 },     // A grid cell containing a fluid quantity `q`
+    Solid,               // A grid cell at a solid boundary (i.e. wall)
+    Empty{ p: f64 }      // A grid cell containing air, with pressure `p`
 }
 
 // Consider making this quantity a generic that
@@ -42,7 +37,7 @@ pub struct FluidQuantity {
 
     // An enum controlling where the quantity is sampled
     // inside each grid cell
-    staggered: Staggered
+    pub staggered: Staggered
 }
 
 impl FluidQuantity {
