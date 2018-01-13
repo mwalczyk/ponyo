@@ -20,11 +20,12 @@ fn main() {
     println!("{}", PRELUDE);
 
     // Create solver
-    let solver_dims = Dimension::new(512, 512);
-    let mut solver = FluidSolver::new(solver_dims);
+    let mut solver = FluidSolver::new(512, 512);
+    solver.init();
 
     // Update solver
     for i in 0..ITERATIONS {
-        // ...
+        //solver.update();
+        //solver.to_image(&format!("iter_{}.png", i))
     }
 }

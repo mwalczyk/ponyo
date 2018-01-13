@@ -75,10 +75,12 @@ impl Mul<f64> for Vector {
     }
 }
 
-pub fn lerp(a: f64, b: f64, c: f64) -> f64 {
+pub fn lerp(a: f64, b: f64, mut c: f64) -> f64 {
     // Returns the linear interpolation of `a` and `b`, given
     // an interpolant `c`. In particular, if `c` is 0.0, `a`
     // will be returned. If `c` is 1.0, `b` will be returned.
+    c = c.min(1.0).max(0.0);
+
     (1.0 - c) * a + c * b
 }
 

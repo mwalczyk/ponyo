@@ -7,16 +7,6 @@ pub enum Staggered {
     OffsetY
 }
 
-impl Staggered {
-    pub fn as_offset(&self) -> Vector {
-        match *self {
-            Staggered::None => Vector::new(0.0, 0.0),
-            Staggered::OffsetX => Vector::new(-0.5, 0.0),
-            Staggered::OffsetY => Vector::new(0.0, -0.5)
-        }
-    }
-}
-
 #[derive(Copy, Clone)]
 pub enum Cell {
     Fluid{ q: f64 },     // A grid cell containing a fluid quantity `q`
@@ -29,8 +19,11 @@ pub enum Cell {
 // ...
 #[derive(Clone)]
 pub struct FluidQuantity {
-    // The width and height of the grid
-    pub dims: Dimension,
+    // The width of the grid containing this quantity
+    pub w: usize,
+
+    // The height of the grid containing this quantity
+    pub h: usize,
 
     // The underlying data store
     data: Vec<f64>,
@@ -41,25 +34,27 @@ pub struct FluidQuantity {
 }
 
 impl FluidQuantity {
-    pub fn new(dims: Dimension, staggered: Staggered) -> FluidQuantity {
+    pub fn new(w: usize, h: usize, staggered: Staggered) -> FluidQuantity {
         FluidQuantity {
-            dims,
-            data: vec![0.0; dims.nx * dims.ny],
+            w,
+            h,
+            data: vec![0.0; w * h],
             staggered
         }
     }
 
-    pub fn from_fn<F>(dims: Dimension, staggered: Staggered, f: F) -> FluidQuantity
+    pub fn from_fn<F>(w: usize, h: usize, staggered: Staggered, f: F) -> FluidQuantity
         where F: Fn(usize, usize) -> f64 {
 
         let mut fluid_quantity = FluidQuantity {
-            dims,
-            data: vec![0.0; dims.nx * dims.ny],
+            w,
+            h,
+            data: vec![0.0; w * h],
             staggered
         };
 
-        for i in 0..fluid_quantity.dims.nx {
-            for j in 0..fluid_quantity.dims.ny {
+        for i in 0..fluid_quantity.w {
+            for j in 0..fluid_quantity.h {
                 fluid_quantity.set(i, j, f(i, j));
             }
         }
@@ -68,21 +63,22 @@ impl FluidQuantity {
     }
 
     pub fn set(&mut self, i: usize, j: usize, v: f64) {
-        assert!(i > 0 && j > 0 && i < self.dims.nx && j < self.dims.ny);
-        self.data[i + self.dims.nx * j] = v;
+      //  assert!(i >= 0 && j >= 0 && i < self.dims.nx && j < self.dims.ny);
+        self.data[i + self.w * j] = v;
     }
 
     // Retrieve the quantity at grid cell (i, j): by convention, (0, 0)
     // is the bottom left corner of the grid
     pub fn at(&self, i: usize, j: usize) -> f64 {
-        assert!(i > 0 && j > 0 && i < self.dims.nx && j < self.dims.ny);
-        self.data[i + self.dims.nx * j]
+       // assert!(i >= 0 && j >= 0 && i < self.dims.nx && j < self.dims.ny);
+        self.data[i + self.w * j]
     }
 
     // Returns the gradient of the fluid quantity at grid cell (i, j)
-    pub fn grad(&self, i: usize, j: usize) -> Vector {
-        Vector::new(self.at(i, j) - self.at(i - 1, j), // Partial w.r.t. x
-                    self.at(i, j) - self.at(i, j - 1)) // Partial w.r.t. y
+    pub fn grad(&self, i: usize, j: usize) -> (f64, f64) {
+        let dx = self.at(i, j) - self.at(i - 1, j); // Partial w.r.t. x
+        let dy = self.at(i, j) - self.at(i, j - 1); // Partial w.r.t. y
+        (dx, dy)
     }
 
     // Returns the divergence of the fluid quantity at grid cell (i, j)
