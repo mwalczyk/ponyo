@@ -171,6 +171,36 @@ impl FluidSolver {
         delta_t
     }
 
+    // self-advection:
+    // self.u = self.advect(&self.u);
+    // self.v = self.advect(&self.v);
+    //
+    // self.dye = self.advect(&self.dye);
+    fn advect_quantity(&self, q: &FluidQuantity) -> FluidQuantity {
+        let mut q_next = FluidQuantity::new(q.w, q.h, q.staggered);
+
+        for i in 0..q.w {
+            for j in 0..q.h {
+
+                // The starting position of the particle is simply (i, j).
+                let position = Vector::new(i as f64, j as f64);
+
+                // Get the velocity vector at position (i, j).
+                let velocity = Vector::new(self.get_interpolated_quantity(&self.u, position.x, position.y),
+                                                  self.get_interpolated_quantity(&self.v, position.x, position.y));
+
+                // Trace backwards using Runge-Kutta order two (RK2) interpolation.
+                // TODO
+                let position_prev = position - velocity * delta_t;
+
+                // Set the value of the fluid quantity in the new buffer.
+                q_next.set(i, j, self.get_interpolated_quantity(q, position.x, position.y));
+            }
+        }
+
+        q_next
+    }
+
     fn advect(&mut self, delta_t: f64) {
         // Advect quantity `q` through the velocity field for
         // a time interval `delta_t`. This should ONLY be called
@@ -205,24 +235,27 @@ impl FluidSolver {
         // Iterate over all grid centers
         for i in 0..self.w {
             for j in 0..self.h {
+                {
+                    // The starting position of the particle
+                    let position = Vector::new(i as f64, j as f64);
 
-                // The starting position of the particle
-                let position = Vector::new(i as f64, j as f64);
+                    // Get the velocity vector at the center of cell (i, j).
+                    let velocity = Vector::new(self.get_interpolated_quantity(&self.u, position.x, position.y),
+                                               self.get_interpolated_quantity(&self.v, position.x, position.y));
 
-                // Get the velocity vector at the center of cell (i, j).
-                let velocity = Vector::new(self.get_interpolated_quantity(&self.u, position.x, position.y),
-                                                  self.get_interpolated_quantity(&self.v, position.x, position.y));
+                    // Trace backwards using Runge-Kutta order two (RK2) interpolation.
+                    // TODO: here we need to do a separate particle trace for EACH component of the velocity
+                    let position_prev = position - velocity * delta_t;
 
-                // Trace backwards using Runge-Kutta order two (RK2) interpolation.
-                // TODO: here we need to do a separate particle trace for EACH component of the velocity
-                let position_prev = position - velocity * delta_t;
+                    // Advect dye
+                    dye_next.set(i, j, self.get_interpolated_quantity(&self.dye, position_prev.x, position_prev.y));
+                }
 
                 // Advect velocity, component-wise
                 u_next.set(i, j, self.get_interpolated_quantity(&self.u, position_prev.x, position_prev.y));
                 v_next.set(i, j, self.get_interpolated_quantity(&self.v, position_prev.x, position_prev.y));
 
-                // Advect dye
-                dye_next.set(i, j, self.get_interpolated_quantity(&self.dye, position_prev.x, position_prev.y));
+
             }
         }
 
@@ -384,12 +417,11 @@ impl FluidSolver {
             // 3. Apply body forces (i.e. gravity).
             self.apply_body_forces(delta_t);
 
-
-
             total_t += delta_t;
             total_iters += 1;
         }
-        self.init();
+
+        //self.init();
         println!("Update complete - {} solver iterations ran", total_iters);
     }
 }
