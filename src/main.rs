@@ -14,7 +14,7 @@ use fluid_solver::FluidSolver;
 // https://cg.informatik.uni-freiburg.de/intern/seminar/gridFluids_fluid-EulerParticle.pdf
 
 static PRELUDE: &'static str = "Ponyo - a 2D, semi-Lagrangian fluid solver";
-const ITERATIONS: usize = 10;
+const ITERATIONS: usize = 500;
 
 fn main() {
     println!("{}", PRELUDE);
@@ -25,7 +25,7 @@ fn main() {
 
     // Update solver
     for i in 0..ITERATIONS {
-        //solver.update();
-        //solver.to_image(&format!("iter_{}.png", i))
+        solver.update();
+        solver.to_image(&format!("images/iter_{}.png", i))
     }
 }

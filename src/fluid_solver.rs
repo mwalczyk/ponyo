@@ -66,13 +66,10 @@ impl FluidSolver {
     }
 
     pub fn to_image(&self, path: &str) {
-        // Saves out an image derived from the solver's dye
-        // field.
-        let image = ImageBuffer::from_fn(self.dye.w as u32,
-                                                                                  self.dye.h as u32,
+        let image = ImageBuffer::from_fn(self.w as u32,
+                                                                                  self.h as u32,
                                                                                   |x, y| {
-            let position = Vector::new(x as f64, y as f64);
-            let color = (1.0 - self.dye.at(x as usize, y as usize)) * 255.0;
+            let color = (1.0 - self.dye.get(x as usize, y as usize)) * 255.0;
 
             image::Luma([color as u8])
         });
@@ -84,10 +81,14 @@ impl FluidSolver {
         // Create an initial divergence-free velocity field with
         // components `u` and `v`. Initialize the pressure field
         // `p` and dye `d`.
-        // TODO: what should go here?
-        for i in 10..100 {
-            for j in 10..100 {
-                self.u.set(i, j, 3.0);
+        let block_size = 50;
+        let block_center_x = 200;
+        let block_center_y = self.h / 2;
+        let u_start = 3.0;
+
+        for i in (block_center_x - block_size / 2)..(block_center_x + block_size / 2) {
+            for j in (block_center_y - block_size / 2)..(block_center_y + block_size / 2) {
+                self.u.set(i, j, u_start);
                 self.dye.set(i, j, 1.0);
             }
         }
@@ -131,10 +132,10 @@ impl FluidSolver {
         //      x_00   |   x_10
         //             |
         //
-        let x_00 = q.at(i, j);
-        let x_10 = q.at(i + 1, j);
-        let x_01 = q.at(i, j + 1);
-        let x_11 = q.at(i + 1, j + 1);
+        let x_00 = q.get(i, j);
+        let x_10 = q.get(i + 1, j);
+        let x_01 = q.get(i, j + 1);
+        let x_11 = q.get(i + 1, j + 1);
 
         let a = lerp(x_00, x_10, oi);
         let b = lerp(x_01, x_11, oi);
@@ -164,7 +165,7 @@ impl FluidSolver {
 
         // The fluid should not move more than MAX_GRID_CELL_TRAVERSAL
         // grid cells per iteration.
-        const MAX_GRID_CELL_TRAVERSAL: usize = 5;
+        const MAX_GRID_CELL_TRAVERSAL: usize = 1;
         let delta_t = (MAX_GRID_CELL_TRAVERSAL as f64 * self.grid_cell_size) / velocity_norm_max;
 
         delta_t
@@ -206,22 +207,22 @@ impl FluidSolver {
             for j in 0..self.h {
 
                 // The starting position of the particle
-                let x_curr = Vector::new(i as f64, j as f64);
+                let position = Vector::new(i as f64, j as f64);
 
                 // Get the velocity vector at the center of cell (i, j).
-                let velocity = Vector::new(self.get_interpolated_quantity(&self.u, x_curr.x, x_curr.y),
-                                                  self.get_interpolated_quantity(&self.v, x_curr.x, x_curr.y));
+                let velocity = Vector::new(self.get_interpolated_quantity(&self.u, position.x, position.y),
+                                                  self.get_interpolated_quantity(&self.v, position.x, position.y));
 
                 // Trace backwards using Runge-Kutta order two (RK2) interpolation.
-                // TODO
-                let x_prev = x_curr - velocity * delta_t;
+                // TODO: here we need to do a separate particle trace for EACH component of the velocity
+                let position_prev = position - velocity * delta_t;
 
                 // Advect velocity, component-wise
-                u_next.set(i, j, self.get_interpolated_quantity(&self.u, x_prev.x, x_prev.y));
-                v_next.set(i, j, self.get_interpolated_quantity(&self.v, x_prev.x, x_prev.y));
+                u_next.set(i, j, self.get_interpolated_quantity(&self.u, position_prev.x, position_prev.y));
+                v_next.set(i, j, self.get_interpolated_quantity(&self.v, position_prev.x, position_prev.y));
 
                 // Advect dye
-                dye_next.set(i, j, self.get_interpolated_quantity(&self.dye, x_prev.x, x_prev.y));
+                dye_next.set(i, j, self.get_interpolated_quantity(&self.dye, position_prev.x, position_prev.y));
             }
         }
 
@@ -235,22 +236,69 @@ impl FluidSolver {
         // TODO
     }
 
-    fn project(&mut self, delta_t: f64) {
+    fn project(&mut self, delta_t: f64, epsilon: f64, max_iters: usize) {
         // Calculate the right amount of pressure to make the velocity
         // field divergence-free.
-        // TODO
 
         // Build RHS of pressure equation.
-        let dims = Dimension::new(self.w, self.h);
         let mut rhs = FluidQuantity::new(self.w, self.h, Staggered::None);
         let scale = 1.0 / self.grid_cell_size;
         for i in 0..self.w {
             for j in 0..self.h {
-                let div_u_x = self.u.at(i + 1, j) - self.u.at(i, j);
-                let div_v_y = self.v.at(i, j + 1) - self.v.at(i, j);
+                let div_u_x = self.u.get(i + 1, j) - self.u.get(i, j);
+                let div_v_y = self.v.get(i, j + 1) - self.v.get(i, j);
                 let div = div_u_x + div_v_y;
 
                 rhs.set(i, j, -scale * div);
+            }
+        }
+
+        // Project
+        let scale = delta_t / (self.density * self.grid_cell_size * self.grid_cell_size);
+        let mut max_delta = 0.0_f64;
+        for iter in 0..max_iters {
+
+            max_delta = 0.0;
+
+            for i in 0..self.w {
+                for j in 0..self.h {
+                    let mut diag = 0.0;
+                    let mut off_diag = 0.0;
+
+                    if i > 0 {
+                        diag += scale;
+                        off_diag -= scale * self.p.get(i - 1, j);
+                    }
+
+                    if j > 0 {
+                        diag += scale;
+                        off_diag -= scale * self.p.get(i, j - 1);
+                    }
+
+                    if i < (self.w - 1) {
+                        diag += scale;
+                        off_diag -= scale * self.p.get(i + 1, j);
+                    }
+
+                    if j < (self.h - 1) {
+                        diag += scale;
+                        off_diag -= scale * self.p.get(i, j + 1);
+                    }
+
+                    let p_next = (rhs.get(i, j) - off_diag) / diag;
+
+                    // Can we exit the solver?
+                    let abs_diff = (self.p.get(i, j) - p_next).abs();
+                    max_delta = max_delta.max(abs_diff);
+
+                    // Update pressure at cell (i, j).
+                    self.p.set(i, j, p_next);
+                }
+            }
+
+            if max_delta < epsilon {
+                println!("Exiting solver after {} iterations, maximum change is: {}", iter, max_delta);
+                break;
             }
         }
 
@@ -264,29 +312,44 @@ impl FluidSolver {
         // lie either outside of the grid or outside of the fluid.
         // We must specify boundary conditions to handle this.
         // a) Dirichlet: at free surface boundaries, the pressure
-        //    is zero.
+        //    is zero. We handle this automatically when we initialize
+        //    the solver.
         // b) Neumann: at solid walls, we substitute in the solid's
-        //    velocity, which is zero for static solids
+        //    velocity, which is zero for static solids. We handle this
+        //    by setting the velocity components along the border
+        //    to zero.
         let scale = delta_t  / (self.density * self.grid_cell_size);
 
         for i in 0..self.w {
             for j in 0..self.h {
-                // Pressure gradient
-                // TODO: check these indices
-                let (grad_p_x, grad_p_y) = self.p.grad(i, j);
 
-                // Update u-component of velocity
-                let u_next = self.u.at(i, j) - delta_t * scale * grad_p_x;
-                self.u.set(i, j, u_next);
 
-                // Update v-component of velocity
-                let v_next = self.v.at(i, j) - delta_t * scale * grad_p_y;
-                self.v.set(i, j, v_next);
+                // Set the velocity field along the borders to zero.
+                if i == 0 {
+                    self.u.set(i, j, 0.0);
+                }
+                if j == 0 {
+                    self.v.set(i, j, 0.0);
+                }
+
+                // At the interior cells, apply the pressure gradient.
+                if i > 0 && j > 0 {
+                    // TODO: check these indices
+                    let (grad_p_x, grad_p_y) = self.p.grad(i, j);
+
+                    // Update u-component of velocity
+                    let u_next = self.u.get(i, j) - scale * grad_p_x;
+                    self.u.set(i, j, u_next);
+
+                    // Update v-component of velocity
+                    let v_next = self.v.get(i, j) - scale * grad_p_y;
+                    self.v.set(i, j, v_next);
+                }
             }
         }
 
-        // Set the velocity field along the borders to zero.
-        // TODO
+
+
     }
 
 
@@ -294,30 +357,39 @@ impl FluidSolver {
 
     pub fn update(&mut self) {
 
-        // 0. Update the hash table of marker cells (i.e. cells that
-        // currently contain fluid).
-        // TODO
+        const FRAME_TIME: f64 = 1.0 / 60.0;
+        let mut total_t = 0.0;
+        let mut total_iters = 0;
 
-        // 1. Determine a good time step `delta_t`
-        let delta_t = self.determine_time_step() * 1000.0; // TODO: this multiplier shouldn't be here
-        println!("New time delta: {}", delta_t);
+        while total_t < FRAME_TIME {
+            // 0. Update the hash table of marker cells (i.e. cells that
+            // currently contain fluid).
+            // TODO
 
-        // 2. Update the velocity field (self-advection) and other quantities
-        // via backwards particle trace RK2 scheme.
-        self.advect(delta_t);
+            // 1. Determine a good time step `delta_t`
+            let delta_t = self.determine_time_step() * 1000.0; // TODO: this multiplier shouldn't be here
 
-        // 3. Apply body forces (i.e. gravity).
-        self.apply_body_forces(delta_t);
+            // 4. Project the velocity field to obey the incompressibility condition:
+            //      a. Setup the matrix A of coefficients
+            //      b. Setup the vector b, which contains the negative divergence
+            //         at each grid cell
+            //      c. Use the Gauss-Siedel method to solve for the pressures
+            //      d. Apply the pressure (update velocities)
+            self.project(delta_t, 1e-5, 6);
 
-        // 4. Project the velocity field to obey the incompressibility condition:
-        //      a. Setup the matrix A of coefficients
-        //      b. Setup the vector b, which contains `div(u)` for each grid cell
-        //      c. Use the Gauss-Siedel method to solve for the pressures
-        //      d. Apply the pressure:
-        //         u' = u - delta_t / (density * grid_cell_size) * grad(pressure)
-        //                             ^^^^^^^
-        //         Note that the `density` term above was a constant (1.0) before.
-        //         How does this work when the density is a field?
-        self.project(delta_t);
+            // 2. Update the velocity field (self-advection) and other quantities
+            // via backwards particle trace RK2 scheme.
+            self.advect(delta_t);
+
+            // 3. Apply body forces (i.e. gravity).
+            self.apply_body_forces(delta_t);
+
+
+
+            total_t += delta_t;
+            total_iters += 1;
+        }
+        self.init();
+        println!("Update complete - {} solver iterations ran", total_iters);
     }
 }
