@@ -35,27 +35,33 @@ fn main() {
     println!("{}", PRELUDE);
 
     // Create and initialize a new solver.
-    let mut solver = FluidSolver::new(512, 512);
+    let mut solver = FluidSolver::new(128, 128);
     solver.init();
 
-    // Set up some simulation variables.
-    let mut total_t = 0.0;
-    let delta_t = 0.005;
-    let mut iter = 0;
+//    // Set up some simulation variables.
+//    let mut total_t = 0.0;
+//    let delta_t = 0.005;
+//    let mut iter = 0;
+//
+//    // Update the solver: run the simulation for 8.0 seconds.
+//    while total_t < 30.0 {
+//
+//        // Take 4 separate sub-steps during each iteration.
+//        for _ in 0..4 {
+//            solver.update(delta_t);
+//            total_t += delta_t;
+//        }
+//
+//        // Save the current frame to disk.
+//        solver.to_image(&format!("images/iter_{}.png", iter));
+//        iter += 1;
+//
+//        println!("Total run time: {} seconds", total_t);
+//    }
 
-    // Update the solver: run the simulation for 8.0 seconds.
-    while total_t < 8.0 {
-
-        // Take 4 separate sub-steps during each iteration.
-        for _ in 0..4 {
-            solver.update(delta_t);
-            total_t += delta_t;
-        }
-
-        // Save the current frame to disk.
+    for iter in 0..3000 {
+        solver.update(0.0);
         solver.to_image(&format!("images/iter_{}.png", iter));
-        iter += 1;
-
-        println!("Total run time: {} seconds", total_t);
+        println!("Completed iteration: {}", iter);
     }
 }

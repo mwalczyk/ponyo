@@ -81,13 +81,14 @@ impl FluidSolver {
         // Create an initial divergence-free velocity field with
         // components `u` and `v`. Initialize the pressure field
         // `p` and dye `d`.
-        let block_size = 50;
-        let block_center_x = 200;
+        let block_w = 30;
+        let block_h = 30;
+        let block_center_x = 50;
         let block_center_y = self.h / 2;
         let u_start = 3.0;
 
-        for i in (block_center_x - block_size / 2)..(block_center_x + block_size / 2) {
-            for j in (block_center_y - block_size / 2)..(block_center_y + block_size / 2) {
+        for i in (block_center_x - block_w / 2)..(block_center_x + block_w / 2) {
+            for j in (block_center_y - block_h / 2)..(block_center_y + block_h / 2) {
                 self.u.set(i, j, u_start);
                 self.dye.set(i, j, 1.0);
             }
@@ -103,6 +104,11 @@ impl FluidSolver {
         // Returns the value of quantity `q` at real-valued coordinates `x` and `y`.
         // A bilinear interpolation will be performed in order to reconstruct values
         // that do not lie on exact grid centers.
+        //
+        // Note that `x` and `y` are treated as coordinates on a non-staggered grid.
+        // In other words, `x` = `y` = 0.0 refers to the center of the cell in the
+        // bottom-left corner of the grid.
+
         let mut oi = x - x.floor();
         let mut oj = y - y.floor();
 
@@ -183,9 +189,18 @@ impl FluidSolver {
             for j in 0..q.h {
 
                 // The starting position of the particle is simply (i, j).
-                let position = Vector::new(i as f64, j as f64);
+                let mut position = Vector::new(i as f64, j as f64);
 
-                // Get the velocity vector at position (i, j).
+                match q.staggered {
+                    Staggered::OffsetX => position.x -= 0.5,
+                    Staggered::OffsetY => position.y -= 0.5,
+                    _ => ()
+                }
+
+                // Get the velocity vector at the point where quantity `q` is
+                // sampled. For example, the u-component of the velocity field
+                // is sampled at the center of the vertical face the grid cell,
+                // so we want to trace a particle from this position backwards.
                 let velocity = Vector::new(self.get_interpolated_quantity(&self.u, position.x, position.y),
                                                   self.get_interpolated_quantity(&self.v, position.x, position.y));
 
@@ -194,7 +209,8 @@ impl FluidSolver {
                 let position_prev = position - velocity * delta_t;
 
                 // Set the value of the fluid quantity in the new buffer.
-                q_next.set(i, j, self.get_interpolated_quantity(q, position.x, position.y));
+                let q_prev = self.get_interpolated_quantity(q, position_prev.x, position_prev.y);
+                q_next.set(i, j, q_prev);
             }
         }
 
@@ -228,41 +244,41 @@ impl FluidSolver {
         // interpolations.
 
         // Advection cannot happen in-place: we need to create new buffers
-        let mut u_next = self.u.clone();
-        let mut v_next = self.v.clone();
-        let mut dye_next = self.dye.clone();
-
-        // Iterate over all grid centers
-        for i in 0..self.w {
-            for j in 0..self.h {
-
-                // The starting position of the particle
-                let position = Vector::new(i as f64, j as f64);
-
-                // Get the velocity vector at the center of cell (i, j).
-                let velocity = Vector::new(self.get_interpolated_quantity(&self.u, position.x, position.y),
-                                                  self.get_interpolated_quantity(&self.v, position.x, position.y));
-
-                // Trace backwards using Runge-Kutta order two (RK2) interpolation.
-                // TODO: here we need to do a separate particle trace for EACH component of the velocity
-                let position_prev = position - velocity * delta_t;
-
-                // Advect dye
-                dye_next.set(i, j, self.get_interpolated_quantity(&self.dye, position_prev.x, position_prev.y));
-
-
-                // Advect velocity, component-wise
-                u_next.set(i, j, self.get_interpolated_quantity(&self.u, position_prev.x, position_prev.y));
-                v_next.set(i, j, self.get_interpolated_quantity(&self.v, position_prev.x, position_prev.y));
-
-
-            }
-        }
+//        let mut u_next = self.u.clone();
+//        let mut v_next = self.v.clone();
+//        let mut dye_next = self.dye.clone();
+//
+//        // Iterate over all grid centers
+//        for i in 0..self.w {
+//            for j in 0..self.h {
+//
+//                // The starting position of the particle
+//                let position = Vector::new(i as f64, j as f64);
+//
+//                // Get the velocity vector at the center of cell (i, j).
+//                let velocity = Vector::new(self.get_interpolated_quantity(&self.u, position.x, position.y),
+//                                                  self.get_interpolated_quantity(&self.v, position.x, position.y));
+//
+//                // Trace backwards using Runge-Kutta order two (RK2) interpolation.
+//                // TODO: here we need to do a separate particle trace for EACH component of the velocity
+//                let position_prev = position - velocity * delta_t;
+//
+//                // Advect dye
+//                dye_next.set(i, j, self.get_interpolated_quantity(&self.dye, position_prev.x, position_prev.y));
+//
+//
+//                // Advect velocity, component-wise
+//                u_next.set(i, j, self.get_interpolated_quantity(&self.u, position_prev.x, position_prev.y));
+//                v_next.set(i, j, self.get_interpolated_quantity(&self.v, position_prev.x, position_prev.y));
+//
+//
+//            }
+//        }
 
         // Swap buffers
-        self.u = u_next;
-        self.v = v_next;
-        self.dye = dye_next;
+        self.u = self.advect_quantity(delta_t, &self.u); //u_next;
+        self.v = self.advect_quantity(delta_t, &self.v); //v_next;
+        self.dye = self.advect_quantity(delta_t, &self.dye); //dye_next;
     }
 
     fn apply_body_forces(&mut self, delta_t: f64) {
@@ -330,7 +346,7 @@ impl FluidSolver {
             }
 
             if max_delta < epsilon {
-                println!("Exiting solver after {} iterations, maximum change is: {}", iter, max_delta);
+                //println!("Exiting solver after {} iterations, maximum change is: {}", iter, max_delta);
                 break;
             }
         }
@@ -355,8 +371,6 @@ impl FluidSolver {
 
         for i in 0..self.w {
             for j in 0..self.h {
-
-
                 // Set the velocity field along the borders to zero.
                 if i == 0 {
                     self.u.set(i, j, 0.0);
@@ -388,34 +402,41 @@ impl FluidSolver {
 
 
 
-    pub fn update(&mut self, delta_t: f64) {
+    pub fn update(&mut self, mut delta_t: f64) {
         const FRAME_TIME: f64 = 1.0 / 60.0;
 
-        // 0. Update the hash table of marker cells (i.e. cells that
-        // currently contain fluid).
-        // TODO
+        let mut total_time = 0.0_f64;
 
-        // 1. Determine a good time step `delta_t`
-        // TODO
-        // let delta_t = self.determine_time_step() * 1000.0;
+        while total_time < FRAME_TIME {
+            // 0. Update the hash table of marker cells (i.e. cells that
+            // currently contain fluid).
+            // TODO
 
-        // TODO: Bridson says that (2) and (4) should be switched...
+            // 1. Determine a good time step `delta_t`
+            // TODO
+            let delta_t = self.determine_time_step();
 
-        // 4. Project the velocity field to obey the incompressibility condition:
-        //      a. Setup the matrix A of coefficients
-        //      b. Setup the vector b, which contains the negative divergence
-        //         at each grid cell
-        //      c. Use the Gauss-Siedel method to solve for the pressures
-        //      d. Apply the pressure (update velocities)
-        self.project(delta_t, 1e-5, 600);
+            // TODO: Bridson says that (2) and (4) should be switched...
 
-        // 2. Update the velocity field (self-advection) and other quantities
-        // via backwards particle trace RK2 scheme.
-        self.advect(delta_t);
+            // 4. Project the velocity field to obey the incompressibility condition:
+            //      a. Setup the matrix A of coefficients
+            //      b. Setup the vector b, which contains the negative divergence
+            //         at each grid cell
+            //      c. Use the Gauss-Siedel method to solve for the pressures
+            //      d. Apply the pressure (update velocities)
+            self.project(delta_t, 1e-5, 600);
 
-        // 3. Apply body forces (i.e. gravity).
-        self.apply_body_forces(delta_t);
+            // 2. Update the velocity field (self-advection) and other quantities
+            // via backwards particle trace RK2 scheme.
+            self.advect(delta_t);
 
-        // self.init();
+            // 3. Apply body forces (i.e. gravity).
+            self.apply_body_forces(delta_t);
+
+            //self.init();
+
+            total_time += delta_t;
+        }
+
     }
 }
