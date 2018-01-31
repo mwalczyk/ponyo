@@ -8,28 +8,28 @@ use fluid_quantity::{Staggered, FluidQuantity};
 use image::{GenericImage, ImageBuffer};
 
 pub struct FluidSolver {
-    // The width of the solver grid
+    /// The width of the solver grid
     w: usize,
 
-    // The height of the solver grid
+    /// The height of the solver grid
     h: usize,
 
-    // The pressure field
+    /// The pressure field
     p: FluidQuantity,
 
-    // The i-component of velocity field
+    /// The i-component of velocity field
     u: FluidQuantity,
 
-    // The j-component of velocity field
+    /// The j-component of velocity field
     v: FluidQuantity,
 
-    // The dye field, for visualization purposes
+    /// The dye field, for visualization purposes
     dye: FluidQuantity,
 
-    // The density of the fluid
+    /// The density of the fluid
     density: f64,
 
-    // The size of each grid cell
+    /// The size of each grid cell
     grid_cell_size: f64
 }
 
@@ -51,8 +51,6 @@ impl FluidSolver {
         //      p(i, j) = P(i + 0.0, j + 0.0)
         //      u(i, j) = U(i - 0.5, j + 0.0)
         //      v(i, j) = V(i + 0.0, j - 0.5)
-        let dims = Dimension::new(w, h);
-
         FluidSolver {
             w,
             h,
@@ -150,9 +148,6 @@ impl FluidSolver {
         c
     }
 
-
-
-
     fn determine_time_step(&self) -> f64 {
         // Find the length of the largest velocity vector.
         let mut velocity_norm_max = f64::NEG_INFINITY;
@@ -160,28 +155,24 @@ impl FluidSolver {
         for i in 0..self.w {
             for j in 0..self.h {
                 // Get the velocity vector at the center of cell (i, j).
-                let velocity = Vector::new(self.get_interpolated_quantity(&self.u, i as f64, j as f64),
-                                                  self.get_interpolated_quantity(&self.v, i as f64, j as f64));
+                let velocity_x = self.get_interpolated_quantity(&self.u, i as f64, j as f64);
+                let velocity_y = self.get_interpolated_quantity(&self.v, i as f64, j as f64);
+                let length = (velocity_x * velocity_x + velocity_y * velocity_y).sqrt();
 
-                if velocity.length() > velocity_norm_max {
-                    velocity_norm_max = velocity.length();
+                if length > velocity_norm_max {
+                    velocity_norm_max = length;
                 }
             }
         }
 
         // The fluid should not move more than MAX_GRID_CELL_TRAVERSAL
         // grid cells per iteration.
-        const MAX_GRID_CELL_TRAVERSAL: usize = 2;
+        const MAX_GRID_CELL_TRAVERSAL: usize = 10;
         let delta_t = (MAX_GRID_CELL_TRAVERSAL as f64 * self.grid_cell_size) / velocity_norm_max;
 
         delta_t
     }
 
-    // self-advection:
-    // self.u = self.advect(&self.u);
-    // self.v = self.advect(&self.v);
-    //
-    // self.dye = self.advect(&self.dye);
     fn advect_quantity(&self, delta_t: f64, q: &FluidQuantity) -> FluidQuantity {
         let mut q_next = FluidQuantity::new(q.w, q.h, q.staggered);
 
@@ -281,8 +272,13 @@ impl FluidSolver {
         self.dye = self.advect_quantity(delta_t, &self.dye); //dye_next;
     }
 
-    fn apply_body_forces(&mut self, delta_t: f64) {
-        // TODO
+    fn apply_body_forces(&mut self, delta_t: f64, g_x: f64, g_y: f64) {
+        for i in 0..self.w {
+            for j in 0..self.h {
+                *self.u.get_mut(i, j) += g_x;
+                *self.v.get_mut(i, j) += g_y;
+            }
+        }
     }
 
     fn project(&mut self, delta_t: f64, epsilon: f64, max_iters: usize) {
@@ -294,6 +290,7 @@ impl FluidSolver {
         let scale = 1.0 / self.grid_cell_size;
         for i in 0..self.w {
             for j in 0..self.h {
+                // Calculate the divergence of the velocity field at (i, j).
                 let div_u_x = self.u.get(i + 1, j) - self.u.get(i, j);
                 let div_v_y = self.v.get(i, j + 1) - self.v.get(i, j);
                 let div = div_u_x + div_v_y;
@@ -351,7 +348,6 @@ impl FluidSolver {
             }
         }
 
-
         // Update each component of the velocity field based on the
         // pressure gradient. Note that this update should ONLY be
         // applied to components of the velocity that border a grid
@@ -371,36 +367,27 @@ impl FluidSolver {
 
         for i in 0..self.w {
             for j in 0..self.h {
-                // Set the velocity field along the borders to zero.
-                if i == 0 {
-                    self.u.set(i, j, 0.0);
-                }
-                if j == 0 {
-                    self.v.set(i, j, 0.0);
-                }
-
-                // At the interior cells, apply the pressure gradient.
                 if i > 0 && j > 0 {
                     // TODO: check these indices
                     let (grad_p_x, grad_p_y) = self.p.grad(i, j);
 
-                    // Update u-component of velocity
-                    let u_next = self.u.get(i, j) - scale * grad_p_x;
-                    self.u.set(i, j, u_next);
-
-                    // Update v-component of velocity
-                    let v_next = self.v.get(i, j) - scale * grad_p_y;
-                    self.v.set(i, j, v_next);
+                    // Update velocity
+                    *self.u.get_mut(i, j) -= scale * grad_p_x;
+                    *self.v.get_mut(i, j) -= scale * grad_p_y;
                 }
             }
         }
 
-
-
+        // Set the velocity field along the borders to zero.
+        for i in 0..self.w {
+            self.u.set(i, 0, 0.0);          // Bottom row
+            self.u.set(i, self.h - 1, 0.0); // Top row
+        }
+        for j in 0..self.h {
+            self.v.set(0, j, 0.0);          // Left column
+            self.v.set(self.w - 1, j, 0.0); // Right column
+        }
     }
-
-
-
 
     pub fn update(&mut self, mut delta_t: f64) {
         const FRAME_TIME: f64 = 1.0 / 60.0;
@@ -413,25 +400,20 @@ impl FluidSolver {
             // TODO
 
             // 1. Determine a good time step `delta_t`
-            // TODO
             let delta_t = self.determine_time_step();
 
             // TODO: Bridson says that (2) and (4) should be switched...
 
-            // 4. Project the velocity field to obey the incompressibility condition:
-            //      a. Setup the matrix A of coefficients
-            //      b. Setup the vector b, which contains the negative divergence
-            //         at each grid cell
-            //      c. Use the Gauss-Siedel method to solve for the pressures
-            //      d. Apply the pressure (update velocities)
+            // 2. Project the velocity field so that it obeys the
+            //    incompressibility condition
             self.project(delta_t, 1e-5, 600);
 
-            // 2. Update the velocity field (self-advection) and other quantities
-            // via backwards particle trace RK2 scheme.
+            // 3. Update the velocity field (self-advection) and other quantities
+            //    via backwards particle trace RK2 scheme.
             self.advect(delta_t);
 
-            // 3. Apply body forces (i.e. gravity).
-            self.apply_body_forces(delta_t);
+            // 4. Apply body forces (i.e. gravity).
+            //self.apply_body_forces(delta_t, 0.0, -9.8);
 
             //self.init();
 

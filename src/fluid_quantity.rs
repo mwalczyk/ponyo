@@ -2,8 +2,15 @@ use helpers::{Dimension, Vector};
 
 #[derive(Copy, Clone)]
 pub enum Staggered {
+    /// The quantity is sampled at the center the grid cells
     None,
+
+    /// The quantity is staggered along the x-axis: it will be
+    /// sampled along the vertical faces of the grid cells
     OffsetX,
+
+    /// The quantity is staggered along the y-axis: it will be
+    /// sampled along the horizontal faces of the grid cells
     OffsetY
 }
 
@@ -19,17 +26,17 @@ pub enum Cell {
 // ...
 #[derive(Clone)]
 pub struct FluidQuantity {
-    // The width of the grid containing this quantity
+    /// The width of the grid containing this quantity
     pub w: usize,
 
-    // The height of the grid containing this quantity
+    /// The height of the grid containing this quantity
     pub h: usize,
 
-    // The underlying data store
+    /// The underlying data store
     data: Vec<f64>,
 
-    // An enum controlling where the quantity is sampled
-    // inside each grid cell
+    /// An enum controlling where the quantity is sampled
+    /// inside each grid cell
     pub staggered: Staggered
 }
 
@@ -62,20 +69,24 @@ impl FluidQuantity {
         fluid_quantity
     }
 
-    pub fn set(&mut self, i: usize, j: usize, v: f64) {
+    fn check_bounds(&self, i: usize, j: usize) {
         assert!(i >= 0 && j >= 0 && i < self.w && j < self.h);
+    }
+
+    pub fn set(&mut self, i: usize, j: usize, v: f64) {
+        self.check_bounds(i, j);
         self.data[i + self.w * j] = v;
     }
 
     // Retrieve the quantity at grid cell (i, j): by convention, (0, 0)
     // is the bottom left corner of the grid
     pub fn get(&self, i: usize, j: usize) -> f64 {
-        assert!(i >= 0 && j >= 0 && i < self.w && j < self.h);
+        self.check_bounds(i, j);
         self.data[i + self.w * j]
     }
 
     pub fn get_mut(&mut self, i: usize, j: usize) -> &mut f64 {
-        assert!(i >= 0 && j >= 0 && i < self.w && j < self.h);
+        self.check_bounds(i, j);
         &mut self.data[i + self.w * j]
     }
 
