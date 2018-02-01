@@ -25,11 +25,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.6"
-     inkscape:cx="826.25"
-     inkscape:cy="246.24996"
+     inkscape:zoom="0.91"
+     inkscape:cx="142.25275"
+     inkscape:cy="112.91662"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g4655"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
@@ -65,19 +65,17 @@
          cy="101.75954"
          cx="-197.44531"
          id="path4528"
-         style="fill:#9ccdec;fill-opacity:1;stroke:none;stroke-width:0.26458332;stroke-opacity:1" />
-      <circle
-         r="11.024305"
-         cy="80.482635"
-         cx="-183.00346"
+         style="fill:#87d1ff;fill-opacity:0.99810606;stroke:none;stroke-width:0.26458332;stroke-opacity:1" />
+      <path
+         style="fill:#daf6fe;fill-opacity:1;stroke:none;stroke-width:0.26458332;stroke-opacity:1"
+         d="m -183.65088,60.679488 c -3.43391,0.163356 -7.01939,2.743849 -7.18554,6.380859 -0.0876,6.257564 3.22387,12.112644 7.60453,16.387697 1.85769,1.901238 4.20339,3.545365 6.9453,3.684685 5.09748,0.375638 10.24514,-3.407762 11.03803,-8.528889 0.98378,-4.895736 -1.5811,-9.947927 -5.50193,-12.828649 -3.6651,-2.886486 -8.13395,-5.156728 -12.90039,-5.095703 z"
          id="path4595"
-         style="fill:#daf6fe;fill-opacity:1;stroke:none;stroke-width:0.26458332;stroke-opacity:1" />
-      <circle
-         r="4.630209"
-         cy="92.168388"
-         cx="-163.82121"
+         inkscape:connector-curvature="0" />
+      <path
+         style="fill:#ccf2ff;fill-opacity:1;stroke:none;stroke-width:0.11112501;stroke-opacity:1"
+         d="M -161.55273 87.988281 C -163.33979 88.098623 -164.61801 90.004435 -164.33015 91.713166 C -164.11344 93.369395 -163.1538 94.80325 -162.21029 96.13564 C -161.17787 97.451364 -159.81668 98.665715 -158.12742 98.983712 C -156.61706 98.995504 -155.45834 97.62322 -155.15659 96.237938 C -154.37816 93.331499 -155.72942 89.892452 -158.48768 88.559872 C -159.43031 88.081532 -160.50346 87.907949 -161.55273 87.988281 z "
          id="path4595-5"
-         style="fill:#ccf2ff;fill-opacity:1;stroke:none;stroke-width:0.11112501;stroke-opacity:1" />
+         inkscape:connector-curvature="0" />
     </g>
     <flowRoot
        xml:space="preserve"
