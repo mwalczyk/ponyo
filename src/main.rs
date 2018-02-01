@@ -8,44 +8,42 @@ use helpers::Dimension;
 use fluid_quantity::FluidQuantity;
 use fluid_solver::FluidSolver;
 
-// References:
-// https://pdfs.semanticscholar.org/9d47/1060d6c48308abcc98dbed850a39dbfea683.pdf
-// https://github.com/ethanjli/dye-transport-simulation
-// https://cg.informatik.uni-freiburg.de/intern/seminar/gridFluids_fluid-EulerParticle.pdf
-// Gauss-Siedel: https://www.youtube.com/watch?v=ajJD0Df5CsY
-
-// TODO:
-// 1. Run `incremental-fluids` repo to compare results
-// 2. Fix advection routine so that a separate particle
-//    is traced for each component of the velocity field
-// 3. Based on (2) and Bridson, revise the interpolation
-//    routine: is trilinear interpolation needed?
-// 4. Review and understand the Gauss-Seidel algorithm
-// 5. Based on (3), revise the projection routine, as
-//    needed
-// 6. Get rid of Vector struct, if deemed unnecessary
-// 7. Fix density parameter: shouldn't this be 1000 kg/m^3?
-// 8. Implement inflow method and/or several initialization
-//    options
-// 9. Port to the GPU using compute shaders or otherwise
-
 static PRELUDE: &'static str = "Ponyo - a 2D, semi-Lagrangian fluid solver";
-const ITERATIONS: usize = 6000;
+const TOTAL_FRAMES: usize = 500;
+const ADD_FLUID_EVERY: usize = 500;
 
 fn main() {
     println!("{}", PRELUDE);
 
     // Create and initialize a new solver.
-    let mut solver = FluidSolver::new(128, 128);
-    solver.init();
+    let w = 128_usize;
+    let h = 128_usize;
+    let mut solver = FluidSolver::new(w, h);
 
-    for i in 0..ITERATIONS {
-        solver.update();
-        solver.to_image(&format!("images/iter_{}.png", i));
+    // Parameters for adding new fluid.
+    let block_w = 30_usize;
+    let block_h = 30_usize;
+    let upper_left_x = w / 2 - block_w / 2;
+    let upper_left_y = h / 2 - block_h / 2;
+    let u = 6.0;
+    let v = 0.0;
 
-        if i % 500 == 0 && i != ITERATIONS {
-            solver.init();
+    // Start the simulation.
+    for i in 0..TOTAL_FRAMES {
+        // Add some fluid, except on the last frame.
+        if i % ADD_FLUID_EVERY == 0 && i != TOTAL_FRAMES {
+            solver.add_source(upper_left_x,
+                              upper_left_y,
+                              block_w,
+                              block_h,
+                              u,
+                              v);
         }
+
+        // Update the solver and save out frames to disk.
+        solver.update();
+        solver.to_image(&format!("images/frame_{}.png", i));
+
         println!("Completed iteration: {}", i);
     }
 }

@@ -40,7 +40,11 @@ pub struct FluidSolver {
     max_grid_cell_traversal: usize,
 
     /// The size of each grid cell
-    grid_cell_size: f64
+    grid_cell_size: f64,
+
+    /// A body force that will be applied globally to the entire
+    /// fluid
+    gravity: (f64, f64)
 }
 
 impl FluidSolver {
@@ -76,17 +80,35 @@ impl FluidSolver {
             density: 0.1,
             frame_time: 1.0 / 60.0,
             max_grid_cell_traversal: 10,
-            grid_cell_size: 1.0 / (w.min(h) as f64)
+            grid_cell_size: 1.0 / (w.min(h) as f64),
+            gravity: (0.0, 0.0)
         }
     }
 
+    /// Sets the density of the fluid.
     pub fn density(mut self, density: f64) -> Self {
         self.density = density;
         self
     }
 
+    /// Sets the duration of each frame. For example, to run the simulation at 60
+    /// frames per second, set `frame_time` to `1.0 / 60.0`.
     pub fn frame_time(mut self, frame_time: f64) -> Self {
         self.frame_time = frame_time;
+        self
+    }
+
+    /// Sets the maximum number of grid cells that a chunk of fluid is allowed to
+    /// traverse during a given timestep
+    pub fn max_grid_cell_traversal(mut self, max_grid_cell_traversal: usize) -> Self {
+        self.max_grid_cell_traversal = max_grid_cell_traversal;
+        self
+    }
+
+    /// Sets the gravity force vector in both the `x` and `y` directions to
+    /// `gravity.0` and `gravity.1`, respectively.
+    pub fn gravity(mut self, gravity: (f64, f64)) -> Self {
+        self.gravity = gravity;
         self
     }
 
@@ -96,48 +118,46 @@ impl FluidSolver {
                                                                                   self.h as u32,
                                                                                   |x, y| {
             let color = (1.0 - self.dye.get(x as usize, y as usize)) * 255.0;
-
             image::Luma([color as u8])
         });
 
         image.save(path).unwrap();
     }
 
-    pub fn init(&mut self) {
-        // Create an initial divergence-free velocity field with
-        // components `u` and `v`. Initialize the pressure field
-        // `p` and dye `d`.
-        let block_w = 30;
-        let block_h = 30;
-        let block_center_x = 50;
-        let block_center_y = self.h / 2;
-        let u_start = 6.0;
+    /// Adds fluid density to some user-specified rectangular region with upper-left
+    /// corner (`upper_left_x`, `upper_left_y`) and dimensions `w`x`h`. The fluid
+    /// in this region will have horizontal velocity `u` and vertical velocity `v`.
+    pub fn add_source(&mut self,
+                      mut upper_left_x: usize,
+                      mut upper_left_y: usize,
+                      mut w: usize,
+                      mut h: usize,
+                      u: f64,
+                      v: f64) {
+        // Clamp the coordinates of the upper-left corner, if necessary.
+        upper_left_x = upper_left_x.min(self.w).max(0);
+        upper_left_y = upper_left_y.min(self.h).max(0);
 
-        for i in (block_center_x - block_w / 2)..(block_center_x + block_w / 2) {
-            for j in (block_center_y - block_h / 2)..(block_center_y + block_h / 2) {
-                self.u.set(i, j, u_start);
-                self.dye.set(i, j, 1.0);
+        for i in upper_left_x..(upper_left_x + w) {
+            for j in upper_left_y..(upper_left_y + h) {
+                *self.u.get_mut(i, j) = u;
+                *self.v.get_mut(i, j) = v;
+                *self.dye.get_mut(i, j) = 1.0;
             }
         }
-    }
-
-    /// Adds fluid density at some user-specified region.
-    fn add_source(&mut self) {
-        // TODO
     }
 
     /// Returns the value of quantity `q` at real-valued coordinates `x` and `y`.
     /// A bilinear interpolation will be performed in order to reconstruct values
     /// that do not lie on exact grid centers.
+    ///
+    /// Note that `x` and `y` are treated as coordinates on a non-staggered grid.
+    /// In other words, `x` = `y` = 0.0 refers to the center of the cell in the
+    /// bottom-left corner of the grid.
     fn get_interpolated_quantity(&self, q: &FluidQuantity, mut x: f64, mut y: f64) -> f64 {
-
-        // Note that `x` and `y` are treated as coordinates on a non-staggered grid.
-        // In other words, `x` = `y` = 0.0 refers to the center of the cell in the
-        // bottom-left corner of the grid.
-
         // Clamp
-        x = x.max(0.0).min((self.w - 2) as f64); // TODO: this is not correct
-        y = y.max(0.0).min((self.h - 2) as f64); // TODO: this is not correct
+        x = x.max(0.0).min((self.w - 2) as f64);
+        y = y.max(0.0).min((self.h - 2) as f64);
 
         let mut oi = x - x.floor();
         let mut oj = y - y.floor();
@@ -152,8 +172,6 @@ impl FluidSolver {
             Staggered::OffsetY => oj += 0.5,
             _ => ()
         }
-
-
 
         // Bilinear interpolation of the fluid quantity via the four surrounding
         // grid cells:
@@ -176,6 +194,12 @@ impl FluidSolver {
         let c = lerp(a, b, oj);
 
         c
+    }
+
+    /// Update the hash table of marker cells (i.e. cells that actually contain
+    /// fluid).
+    fn update_marker_cells(&mut self) {
+        // TODO
     }
 
     /// Determines an appropriate timestep, given the current
@@ -233,14 +257,14 @@ impl FluidSolver {
                 let position_prev = position - velocity * delta_t;
 
                 // Set the value of the fluid quantity in the new buffer.
-                let q_prev = self.get_interpolated_quantity(q, position_prev.x, position_prev.y);
-                q_next.set(i, j, q_prev);
+                *q_next.get_mut(i, j) = self.get_interpolated_quantity(q, position_prev.x, position_prev.y);
             }
         }
 
         q_next
     }
 
+    /// Advect all of the relevant fluid quantities.
     fn advect(&mut self, delta_t: f64) {
         // Here, we take a semi-Lagrangian approach. We run time
         // "backwards" to find the start point of a particle that
@@ -263,10 +287,10 @@ impl FluidSolver {
         // interpolations.
         //
         // Advection cannot happen in-place: we need to create new buffers
-        // and swap them
-        self.u = self.advect_quantity(delta_t, &self.u); //u_next;
-        self.v = self.advect_quantity(delta_t, &self.v); //v_next;
-        self.dye = self.advect_quantity(delta_t, &self.dye); //dye_next;
+        // and swap them.
+        self.u = self.advect_quantity(delta_t, &self.u);
+        self.v = self.advect_quantity(delta_t, &self.v);
+        self.dye = self.advect_quantity(delta_t, &self.dye);
     }
 
     /// Apply body forces (such as gravity) to the entire fluid.
@@ -281,7 +305,7 @@ impl FluidSolver {
 
     /// Calculate the right amount of pressure to make the velocity
     /// field divergence-free.
-    fn project(&mut self, delta_t: f64, epsilon: f64, max_iters: usize) {
+    fn project(&mut self, delta_t: f64, tolerance: f64, max_iters: usize) {
         // Build the right-hand side of pressure equation.
         let scale = 1.0 / self.grid_cell_size;
         for i in 0..self.w {
@@ -291,11 +315,14 @@ impl FluidSolver {
                 let div_v_y = self.v.get(i, j + 1) - self.v.get(i, j);
                 let div = div_u_x + div_v_y;
 
+                // The negative divergence becomes the right-hand side of the
+                // pressure equation.
                 self.rhs.set(i, j, -scale * div);
             }
         }
 
-        // Project using the Gauss-Siedel method.
+        // Project using the Gauss-Siede method, which is an iterative
+        // approach to solving systems of linear equations.
         let scale = delta_t / (self.density * self.grid_cell_size * self.grid_cell_size);
         let mut max_delta = 0.0_f64;
         for iter in 0..max_iters {
@@ -333,12 +360,12 @@ impl FluidSolver {
                     let abs_diff = (self.p.get(i, j) - p_next).abs();
                     max_delta = max_delta.max(abs_diff);
 
-                    // Update pressure at cell (i, j).
-                    self.p.set(i, j, p_next);
+                    // Update the pressure at cell (i, j).
+                    *self.p.get_mut(i, j) = p_next;
                 }
             }
 
-            if max_delta < epsilon {
+            if max_delta < tolerance {
                 //println!("Exiting solver after {} iterations, maximum change is: {}", iter, max_delta);
                 break;
             }
@@ -373,13 +400,13 @@ impl FluidSolver {
         }
 
         // Set the velocity field along the borders to zero.
-        for i in 0..self.w {
-            *self.v.get_mut(i, 0) = 0.0;            // Bottom row
-            *self.v.get_mut(i, self.h - 1) = 0.0; // Top row
-        }
         for j in 0..self.h {
             *self.u.get_mut(0, j) = 0.0;          // Left column
             *self.u.get_mut(self.w - 1, j) = 0.0; // Right column
+        }
+        for i in 0..self.w {
+            *self.v.get_mut(i, 0) = 0.0;          // Bottom row
+            *self.v.get_mut(i, self.h - 1) = 0.0; // Top row
         }
     }
 
@@ -388,27 +415,20 @@ impl FluidSolver {
         let mut total_time = 0.0_f64;
 
         while total_time < self.frame_time {
-            // 0. Update the hash table of marker cells (i.e. cells that
-            // currently contain fluid).
-            // TODO
+            // (0) Update the hash table of marker cells.
+            self.update_marker_cells();
 
-            // 1. Determine a good time step `delta_t`
+            // (1) Determine a good time step, based on the current velocity field.
             let delta_t = self.determine_time_step();
 
-            // TODO: Bridson says that (2) and (4) should be switched...
-
-            // 2. Project the velocity field so that it obeys the
-            //    incompressibility condition
+            // (2) Force the fluid to obey the incompressibility condition.
             self.project(delta_t, 1e-5, 600);
 
-            // 3. Update the velocity field (self-advection) and other quantities
-            //    via backwards particle trace RK2 scheme.
+            // (3) Update the velocity field (self-advection) and other quantities.
             self.advect(delta_t);
 
-            // 4. Apply body forces (i.e. gravity).
-            //self.apply_body_forces(delta_t, 0.0, -9.8);
-
-            //self.init();
+            // (4) Apply body forces.
+            self.apply_body_forces(delta_t, self.gravity.0, self.gravity.1);
 
             total_time += delta_t;
         }

@@ -16,9 +16,14 @@ pub enum Staggered {
 
 #[derive(Copy, Clone)]
 pub enum Cell {
-    Fluid{ q: f64 },     // A grid cell containing a fluid quantity `q`
-    Solid,               // A grid cell at a solid boundary (i.e. wall)
-    Empty{ p: f64 }      // A grid cell containing air, with pressure `p`
+    /// A grid cell containing a fluid quantity `q`
+    Fluid{ q: f64 },
+
+    /// A grid cell at a solid boundary (i.e. wall)
+    Solid,
+
+    /// A grid cell containing air, with pressure `p`
+    Empty{ p: f64 }
 }
 
 // Consider making this quantity a generic that
@@ -32,12 +37,12 @@ pub struct FluidQuantity {
     /// The height of the grid containing this quantity
     pub h: usize,
 
-    /// The underlying data store
-    data: Vec<f64>,
-
     /// An enum controlling where the quantity is sampled
     /// inside each grid cell
-    pub staggered: Staggered
+    pub staggered: Staggered,
+
+    /// The underlying data store
+    data: Vec<f64>
 }
 
 impl FluidQuantity {
@@ -45,8 +50,8 @@ impl FluidQuantity {
         FluidQuantity {
             w,
             h,
-            data: vec![0.0; w * h],
-            staggered
+            staggered,
+            data: vec![0.0; w * h]
         }
     }
 
@@ -56,13 +61,13 @@ impl FluidQuantity {
         let mut fluid_quantity = FluidQuantity {
             w,
             h,
-            data: vec![0.0; w * h],
-            staggered
+            staggered,
+            data: vec![0.0; w * h]
         };
 
         for i in 0..fluid_quantity.w {
             for j in 0..fluid_quantity.h {
-                fluid_quantity.set(i, j, f(i, j));
+                *fluid_quantity.get_mut(i, j) = f(i, j);
             }
         }
 
@@ -70,7 +75,7 @@ impl FluidQuantity {
     }
 
     fn check_bounds(&self, i: usize, j: usize) {
-        assert!(i >= 0 && j >= 0 && i < self.w && j < self.h);
+        debug_assert!(i >= 0 && j >= 0 && i < self.w && j < self.h);
     }
 
     pub fn set(&mut self, i: usize, j: usize, v: f64) {
