@@ -3,7 +3,7 @@ A semi-Lagrangian fluid solver based on Robert Bridson's book,
 _Fluid Simulation for Computer Graphics (2nd Edition)_.
 
 <p align="center">
-  <img src="https://github.com/mwalczyk/ponyo/blob/master/logo.svg" alt="plume logo" width="400" height="auto"/>
+  <img src="https://github.com/mwalczyk/ponyo/blob/master/logo.svg" alt="plume logo" width="100" height="auto"/>
 </p>
 
 ## Running
