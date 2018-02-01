@@ -2,10 +2,15 @@ extern crate image;
 
 use std::f64;
 
-use helpers::{Dimension, Vector, lerp};
+use helpers::{Vector, lerp};
 use fluid_quantity::{Staggered, FluidQuantity};
 
 use image::{GenericImage, ImageBuffer};
+
+pub enum InterpolationScheme {
+    RK1,
+    RK2
+}
 
 pub struct FluidSolver {
     /// The width of the solver grid
@@ -294,19 +299,17 @@ impl FluidSolver {
     }
 
     /// Apply body forces (such as gravity) to the entire fluid.
-    fn apply_body_forces(&mut self, delta_t: f64, g_x: f64, g_y: f64) {
+    fn apply_body_forces(&mut self) {
         for i in 0..self.w {
             for j in 0..self.h {
-                *self.u.get_mut(i, j) += g_x;
-                *self.v.get_mut(i, j) += g_y;
+                *self.u.get_mut(i, j) += self.gravity.0;
+                *self.v.get_mut(i, j) += self.gravity.1;
             }
         }
     }
 
-    /// Calculate the right amount of pressure to make the velocity
-    /// field divergence-free.
-    fn project(&mut self, delta_t: f64, tolerance: f64, max_iters: usize) {
-        // Build the right-hand side of pressure equation.
+    /// Build the right-hand side of pressure equation.
+    fn build_rhs(&mut self) {
         let scale = 1.0 / self.grid_cell_size;
         for i in 0..self.w {
             for j in 0..self.h {
@@ -320,12 +323,14 @@ impl FluidSolver {
                 self.rhs.set(i, j, -scale * div);
             }
         }
+    }
 
-        // Project using the Gauss-Siede method, which is an iterative
-        // approach to solving systems of linear equations.
+    /// Project using the Gauss-Seidel method, which is an iterative
+    /// approach to solving systems of linear equations.
+    fn solve_pressure(&mut self, delta_t: f64, tolerance: f64, max_iterations: usize) {
         let scale = delta_t / (self.density * self.grid_cell_size * self.grid_cell_size);
         let mut max_delta = 0.0_f64;
-        for iter in 0..max_iters {
+        for iter in 0..max_iterations {
 
             max_delta = 0.0;
 
@@ -370,25 +375,26 @@ impl FluidSolver {
                 break;
             }
         }
+    }
 
-        // Update each component of the velocity field based on the
-        // pressure gradient. Note that this update should only be
-        // applied to components of the velocity that border a grid
-        // cell that contains fluid.
-        //
-        // Some updates may require the pressure of grid cells that
-        // lie either outside of the grid or outside of the fluid.
-        // We must specify boundary conditions to handle this:
-        //
-        // a) Dirichlet: at free surface boundaries, the pressure
-        //    is zero. We handle this automatically when we initialize
-        //    the solver.
-        // b) Neumann: at solid walls, we substitute in the solid's
-        //    velocity, which is zero for static solids. We handle this
-        //    by setting the velocity components along the border
-        //    to zero (below).
+    /// Update each component of the velocity field based on the
+    /// pressure gradient. Note that this update should only be
+    /// applied to components of the velocity that border a grid
+    /// cell that contains fluid.
+    ///
+    /// Some updates may require the pressure of grid cells that
+    /// lie either outside of the grid or outside of the fluid.
+    /// We must specify boundary conditions to handle this:
+    ///
+    /// a) Dirichlet: at free surface boundaries, the pressure
+    ///    is zero. We handle this automatically when we initialize
+    ///    the solver.
+    /// b) Neumann: at solid walls, we substitute in the solid's
+    ///    velocity, which is zero for static solids. We handle this
+    ///    by setting the velocity components along the border
+    ///    to zero.
+    fn apply_pressure(&mut self, delta_t: f64) {
         let scale = delta_t  / (self.density * self.grid_cell_size);
-
         for i in 1..self.w {
             for j in 1..self.h {
                 let (grad_p_x, grad_p_y) = self.p.grad(i, j);
@@ -410,6 +416,14 @@ impl FluidSolver {
         }
     }
 
+    /// Calculate the right amount of pressure to make the velocity
+    /// field divergence-free.
+    fn project(&mut self, delta_t: f64, tolerance: f64, max_iterations: usize) {
+        self.build_rhs();
+        self.solve_pressure(delta_t, tolerance, max_iterations);
+        self.apply_pressure(delta_t);
+    }
+
     /// Moves the entire fluid simulation forward in time.
     pub fn update(&mut self) {
         let mut total_time = 0.0_f64;
@@ -428,7 +442,7 @@ impl FluidSolver {
             self.advect(delta_t);
 
             // (4) Apply body forces.
-            self.apply_body_forces(delta_t, self.gravity.0, self.gravity.1);
+            self.apply_body_forces();
 
             total_time += delta_t;
         }

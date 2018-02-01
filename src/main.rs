@@ -4,16 +4,34 @@ mod helpers;
 mod fluid_quantity;
 mod fluid_solver;
 
-use helpers::Dimension;
+use std::env;
 use fluid_quantity::FluidQuantity;
 use fluid_solver::FluidSolver;
 
-static PRELUDE: &'static str = "Ponyo - a 2D, semi-Lagrangian fluid solver";
-const TOTAL_FRAMES: usize = 500;
+static IMAGE_DIR: &'static str = "images";
+const TOTAL_FRAMES: usize = 6000;
 const ADD_FLUID_EVERY: usize = 500;
 
+fn help() {
+    println!("Ponyo - a 2D, semi-Lagrangian fluid solver");
+}
+
 fn main() {
-    println!("{}", PRELUDE);
+    help();
+
+    // Parse command-line arguments:
+    //
+    // --output_dir -o
+    // --resolution -r
+    // --frame_count -f
+    // --density -d
+    // ...
+    let args: Vec<String> = env::args().collect();
+    match args.len() {
+        1 => (),
+        2 => (),
+        _ => help()
+    }
 
     // Create and initialize a new solver.
     let w = 128_usize;
@@ -42,8 +60,7 @@ fn main() {
 
         // Update the solver and save out frames to disk.
         solver.update();
-        solver.to_image(&format!("images/frame_{}.png", i));
-
+        solver.to_image(&format!("{}/frame_{}.png", IMAGE_DIR, i));
         println!("Completed iteration: {}", i);
     }
 }

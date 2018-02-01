@@ -1,4 +1,4 @@
-use helpers::{Dimension, Vector};
+use helpers::Vector;
 
 #[derive(Copy, Clone)]
 pub enum Staggered {
@@ -26,9 +26,6 @@ pub enum Cell {
     Empty{ p: f64 }
 }
 
-// Consider making this quantity a generic that
-// must implement a trait like "Differentiable"
-// ...
 #[derive(Clone)]
 pub struct FluidQuantity {
     /// The width of the grid containing this quantity
