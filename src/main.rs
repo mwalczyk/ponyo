@@ -30,7 +30,7 @@ use fluid_solver::FluidSolver;
 // 9. Port to the GPU using compute shaders or otherwise
 
 static PRELUDE: &'static str = "Ponyo - a 2D, semi-Lagrangian fluid solver";
-const ITERATIONS: usize = 100;
+const ITERATIONS: usize = 6000;
 
 fn main() {
     println!("{}", PRELUDE);
@@ -39,30 +39,13 @@ fn main() {
     let mut solver = FluidSolver::new(128, 128);
     solver.init();
 
-//    // Set up some simulation variables.
-//    let mut total_t = 0.0;
-//    let delta_t = 0.005;
-//    let mut iter = 0;
-//
-//    // Update the solver: run the simulation for 8.0 seconds.
-//    while total_t < 30.0 {
-//
-//        // Take 4 separate sub-steps during each iteration.
-//        for _ in 0..4 {
-//            solver.update(delta_t);
-//            total_t += delta_t;
-//        }
-//
-//        // Save the current frame to disk.
-//        solver.to_image(&format!("images/iter_{}.png", iter));
-//        iter += 1;
-//
-//        println!("Total run time: {} seconds", total_t);
-//    }
+    for i in 0..ITERATIONS {
+        solver.update();
+        solver.to_image(&format!("images/iter_{}.png", i));
 
-    for iter in 0..3000 {
-        solver.update(0.0);
-        solver.to_image(&format!("images/iter_{}.png", iter));
-        println!("Completed iteration: {}", iter);
+        if i % 500 == 0 && i != ITERATIONS {
+            solver.init();
+        }
+        println!("Completed iteration: {}", i);
     }
 }

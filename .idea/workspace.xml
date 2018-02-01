@@ -15,24 +15,24 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.3282226">
+    <splitter split-orientation="horizontal" split-proportion="0.22884725">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="fluid_quantity.rs" pinned="false" current-in-tab="true">
+          <file leaf-file-name="fluid_quantity.rs" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/fluid_quantity.rs">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-35">
-                  <caret line="81" column="35" lean-forward="false" selection-start-line="81" selection-start-column="35" selection-end-line="81" selection-end-column="35" />
+                <state relative-caret-position="-53">
+                  <caret line="80" column="6" lean-forward="false" selection-start-line="80" selection-start-column="6" selection-end-line="80" selection-end-column="6" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="main.rs" pinned="false" current-in-tab="false">
+          <file leaf-file-name="main.rs" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/main.rs">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="433">
-                  <caret line="64" column="7" lean-forward="false" selection-start-line="64" selection-start-column="7" selection-end-line="64" selection-end-column="7" />
+                <state relative-caret-position="253">
+                  <caret line="33" column="0" lean-forward="false" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -45,15 +45,17 @@
           <file leaf-file-name="fluid_solver.rs" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/fluid_solver.rs">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="276">
-                  <caret line="378" column="9" lean-forward="true" selection-start-line="378" selection-start-column="9" selection-end-line="378" selection-end-column="9" />
+                <state relative-caret-position="269">
+                  <caret line="382" column="9" lean-forward="false" selection-start-line="382" selection-start-column="9" selection-end-line="382" selection-end-column="9" />
                   <folding>
                     <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-                    <element signature="e#2033#2450#0" expanded="false" />
-                    <element signature="e#5965#7419#0" expanded="false" />
-                    <element signature="e#7460#10371#0" expanded="false" />
-                    <element signature="e#10443#10628#0" expanded="false" />
-                    <element signature="e#11002#11370#0" expanded="false" />
+                    <element signature="e#1871#2459#0" expanded="false" />
+                    <element signature="e#2777#3194#0" expanded="false" />
+                    <element signature="e#3907#3930#0" expanded="false" />
+                    <element signature="e#5788#6582#0" expanded="false" />
+                    <element signature="e#8389#9648#0" expanded="false" />
+                    <element signature="e#9785#9970#0" expanded="false" />
+                    <element signature="e#10927#12090#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -62,7 +64,7 @@
           <file leaf-file-name="helpers.rs" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/helpers.rs">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1063">
+                <state relative-caret-position="37">
                   <caret line="85" column="0" lean-forward="false" selection-start-line="85" selection-start-column="0" selection-end-line="85" selection-end-column="0" />
                   <folding />
                 </state>
@@ -83,8 +85,8 @@
         <option value="$PROJECT_DIR$/Cargo.toml" />
         <option value="$PROJECT_DIR$/src/helpers.rs" />
         <option value="$PROJECT_DIR$/src/fluid_quantity.rs" />
-        <option value="$PROJECT_DIR$/src/main.rs" />
         <option value="$PROJECT_DIR$/src/fluid_solver.rs" />
+        <option value="$PROJECT_DIR$/src/main.rs" />
       </list>
     </option>
   </component>
@@ -112,6 +114,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -128,9 +132,7 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
-      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -231,13 +233,13 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Cargo" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27144408" sideWeight="0.50208336" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27144408" sideWeight="0.50416666" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27144408" sideWeight="0.49583334" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27144408" sideWeight="0.49791667" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -281,11 +283,13 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -335,11 +339,13 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -366,11 +372,13 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -413,11 +421,13 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -452,11 +462,13 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -483,11 +495,13 @@
           <caret line="22" column="40" lean-forward="false" selection-start-line="22" selection-start-column="40" selection-end-line="22" selection-end-column="40" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -514,11 +528,13 @@
           <caret line="22" column="40" lean-forward="false" selection-start-line="22" selection-start-column="40" selection-end-line="22" selection-end-column="40" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -575,11 +591,13 @@
           <caret line="104" column="50" lean-forward="true" selection-start-line="104" selection-start-column="50" selection-end-line="104" selection-end-column="50" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -606,11 +624,13 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -637,11 +657,13 @@
           <caret line="22" column="40" lean-forward="false" selection-start-line="22" selection-start-column="40" selection-end-line="22" selection-end-column="40" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -668,11 +690,13 @@
           <caret line="22" column="40" lean-forward="false" selection-start-line="22" selection-start-column="40" selection-end-line="22" selection-end-column="40" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -702,40 +726,42 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/helpers.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1063">
+        <state relative-caret-position="37">
           <caret line="85" column="0" lean-forward="false" selection-start-line="85" selection-start-column="0" selection-end-line="85" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main.rs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="433">
-          <caret line="64" column="7" lean-forward="false" selection-start-line="64" selection-start-column="7" selection-end-line="64" selection-end-column="7" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/fluid_quantity.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-35">
-          <caret line="81" column="35" lean-forward="false" selection-start-line="81" selection-start-column="35" selection-end-line="81" selection-end-column="35" />
+        <state relative-caret-position="-53">
+          <caret line="80" column="6" lean-forward="false" selection-start-line="80" selection-start-column="6" selection-end-line="80" selection-end-column="6" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/fluid_solver.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="276">
-          <caret line="378" column="9" lean-forward="true" selection-start-line="378" selection-start-column="9" selection-end-line="378" selection-end-column="9" />
+        <state relative-caret-position="269">
+          <caret line="382" column="9" lean-forward="false" selection-start-line="382" selection-start-column="9" selection-end-line="382" selection-end-column="9" />
           <folding>
             <element signature="n#!!block;n#FluidSolver#0" expanded="false" />
-            <element signature="e#2033#2450#0" expanded="false" />
-            <element signature="e#5965#7419#0" expanded="false" />
-            <element signature="e#7460#10371#0" expanded="false" />
-            <element signature="e#10443#10628#0" expanded="false" />
-            <element signature="e#11002#11370#0" expanded="false" />
+            <element signature="e#1871#2459#0" expanded="false" />
+            <element signature="e#2777#3194#0" expanded="false" />
+            <element signature="e#3907#3930#0" expanded="false" />
+            <element signature="e#5788#6582#0" expanded="false" />
+            <element signature="e#8389#9648#0" expanded="false" />
+            <element signature="e#9785#9970#0" expanded="false" />
+            <element signature="e#10927#12090#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="253">
+          <caret line="33" column="0" lean-forward="false" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>

@@ -78,8 +78,8 @@ impl FluidQuantity {
         self.data[i + self.w * j] = v;
     }
 
-    // Retrieve the quantity at grid cell (i, j): by convention, (0, 0)
-    // is the bottom left corner of the grid
+    /// Retrieve the quantity at grid cell (i, j): by convention, (0, 0)
+    /// is the bottom left corner of the grid
     pub fn get(&self, i: usize, j: usize) -> f64 {
         self.check_bounds(i, j);
         self.data[i + self.w * j]
@@ -90,20 +90,20 @@ impl FluidQuantity {
         &mut self.data[i + self.w * j]
     }
 
-    // Returns the gradient of the fluid quantity at grid cell (i, j)
+    /// Returns the gradient of the fluid quantity at grid cell (i, j)
     pub fn grad(&self, i: usize, j: usize) -> (f64, f64) {
         let dx = self.get(i, j) - self.get(i - 1, j); // Partial w.r.t. x
         let dy = self.get(i, j) - self.get(i, j - 1); // Partial w.r.t. y
         (dx, dy)
     }
 
-    // Returns the divergence of the fluid quantity at grid cell (i, j)
+    /// Returns the divergence of the fluid quantity at grid cell (i, j)
     pub fn div(&self, i: usize, j: usize) -> f64 {
         self.get(i + 1, j) - self.get(i, j) +
         self.get(i, j + 1) - self.get(i, j)
     }
 
-    // Returns the laplacian of the fluid quantity at grid cell (i, j)
+    /// Returns the laplacian of the fluid quantity at grid cell (i, j)
     pub fn lap(&self, i: usize, j: usize) -> f64 {
         self.get(i + 1, j) + self.get(i - 1, j) +
         self.get(i, j + 1) + self.get(i, j - 1) -
