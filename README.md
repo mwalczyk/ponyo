@@ -2,6 +2,10 @@
 A semi-Lagrangian fluid solver based on Robert Bridson's book, 
 _Fluid Simulation for Computer Graphics (2nd Edition)_.
 
+<p align="center">
+  <img src="https://github.com/mwalczyk/ponyo/blob/master/logo.svg" alt="plume logo" width="400" height="auto"/>
+</p>
+
 ## Running
 Make sure you have Rust installed. Navigate inside the directory and
 execute the command: `cargo run --release`. This will save frames to 
