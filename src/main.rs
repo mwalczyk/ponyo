@@ -11,6 +11,10 @@ use fluid_quantity::FluidQuantity;
 use fluid_solver::FluidSolver;
 use pbr::ProgressBar;
 
+// TODO:
+// https://en.wikipedia.org/wiki/Stencil_code
+// http://developer.download.nvidia.com/books/HTML/gpugems/gpugems_ch38.html
+
 static IMAGE_DIR: &'static str = "images";
 const TOTAL_FRAMES: usize = 6000;
 const ADD_FLUID_EVERY: usize = 500;
