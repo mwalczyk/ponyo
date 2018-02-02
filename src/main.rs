@@ -1,12 +1,15 @@
 extern crate image;
+extern crate pbr;
 
 mod helpers;
 mod fluid_quantity;
 mod fluid_solver;
+mod render;
 
 use std::env;
 use fluid_quantity::FluidQuantity;
 use fluid_solver::FluidSolver;
+use pbr::ProgressBar;
 
 static IMAGE_DIR: &'static str = "images";
 const TOTAL_FRAMES: usize = 6000;
@@ -18,6 +21,9 @@ fn help() {
 
 fn main() {
     help();
+
+    let sp = render::shader_program::ShaderProgram { id: 32 };
+    sp.test();
 
     // Parse command-line arguments:
     //
@@ -46,8 +52,14 @@ fn main() {
     let u = 6.0;
     let v = 0.0;
 
+    // Initialize the progress bar.
+    let mut progress = ProgressBar::new(TOTAL_FRAMES as u64);
+
     // Start the simulation.
     for i in 0..TOTAL_FRAMES {
+        // Increment the progress bar.
+        progress.inc();
+
         // Add some fluid, except on the last frame.
         if i % ADD_FLUID_EVERY == 0 && i != TOTAL_FRAMES {
             solver.add_source(upper_left_x,
@@ -61,6 +73,6 @@ fn main() {
         // Update the solver and save out frames to disk.
         solver.update();
         solver.to_image(&format!("{}/frame_{}.png", IMAGE_DIR, i));
-        println!("Completed iteration: {}", i);
+        //println!("Completed iteration: {}", i);
     }
 }
