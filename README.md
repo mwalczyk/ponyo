@@ -8,8 +8,31 @@ _Fluid Simulation for Computer Graphics (2nd Edition)_.
 
 ## Running
 Make sure you have Rust installed. Navigate inside the directory and
-execute the command: `cargo run --release`. This will save frames to 
-the directory `images`.
+execute the command: `cargo build --release`. You can then run the application with `cargo run`. There
+are several optional command-line arguments that can be used to configure the simulation:
+
+```
+USAGE:
+    ponyo.exe [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --frame_count <COUNT>             Sets the number of frames that will be rendered
+    -o, --output_directory <DIRECTORY>    Sets the directory where images will be rendered to
+    -r, --resolution <WIDTHxHEIGHT>       Sets the resolution of the simulation, in pixels
+
+```
+
+## Dependencies
+Ponyo uses the following crates:
+```
+image = "*"
+pbr = "*"
+clap = "*"
+```
 
 ## References
 Throughout the creation of this project, several papers and 
