@@ -1,8 +1,11 @@
 [package]
-name = "github-repositories"
+name = "ponyo"
 version = "0.1.0"
 authors = ["mike"]
 
 [dependencies]
 image = "*"
 pbr = "*"
+clap = "*"
+#gl = "*"
+#glutin = "*"
