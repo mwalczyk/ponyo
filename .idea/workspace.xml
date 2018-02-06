@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="354a1aca-2eca-41ff-bdd0-087474141b05" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
-    </list>
+    <list default="true" id="354a1aca-2eca-41ff-bdd0-087474141b05" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -44,8 +42,8 @@
           <file leaf-file-name="fluid_solver.rs" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/fluid_solver.rs">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="379">
-                  <caret line="417" column="0" lean-forward="true" selection-start-line="417" selection-start-column="0" selection-end-line="417" selection-end-column="0" />
+                <state relative-caret-position="253">
+                  <caret line="389" column="30" lean-forward="false" selection-start-line="389" selection-start-column="30" selection-end-line="389" selection-end-column="30" />
                   <folding>
                     <element signature="e#2729#2781#0" expanded="false" />
                     <element signature="e#2983#3041#0" expanded="false" />
@@ -133,7 +131,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="13" />
     <option name="y" value="-10" />
     <option name="width" value="1873" />
@@ -274,7 +272,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-9" y="-9" width="1938" height="1064" extended-state="6" />
+    <frame x="-9" y="-9" width="1938" height="1064" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -914,10 +912,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="74">
+          <caret line="25" column="35" lean-forward="true" selection-start-line="25" selection-start-column="35" selection-end-line="25" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/fluid_solver.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="379">
-          <caret line="417" column="0" lean-forward="true" selection-start-line="417" selection-start-column="0" selection-end-line="417" selection-end-column="0" />
+        <state relative-caret-position="253">
+          <caret line="389" column="30" lean-forward="false" selection-start-line="389" selection-start-column="30" selection-end-line="389" selection-end-column="30" />
           <folding>
             <element signature="e#2729#2781#0" expanded="false" />
             <element signature="e#2983#3041#0" expanded="false" />
@@ -936,14 +942,6 @@
             <element signature="e#15678#16372#0" expanded="false" />
             <element signature="e#15762#16365#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main.rs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="74">
-          <caret line="25" column="35" lean-forward="true" selection-start-line="25" selection-start-column="35" selection-end-line="25" selection-end-column="35" />
-          <folding />
         </state>
       </provider>
     </entry>
