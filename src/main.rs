@@ -93,6 +93,5 @@ fn main() {
         // Update the solver and save out frames to disk.
         solver.update();
         solver.to_image(&format!("{}/frame_{}.png", output_directory, i));
-        println!("Completed iteration: {}", i);
     }
 }

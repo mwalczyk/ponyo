@@ -8,7 +8,10 @@ use fluid_quantity::{Staggered, FluidQuantity};
 use image::{GenericImage, ImageBuffer};
 
 pub enum InterpolationScheme {
+    /// First-order Runge Kutta interpolation
     RK1,
+
+    /// Second-order Runge Kutta interpolation
     RK2
 }
 
@@ -49,7 +52,11 @@ pub struct FluidSolver {
 
     /// A body force that will be applied globally to the entire
     /// fluid
-    gravity: (f64, f64)
+    gravity: (f64, f64),
+
+    /// The interpolation algorithm that will be used during the
+    /// backwards particle trace
+    interpolation_scheme: InterpolationScheme
 }
 
 impl FluidSolver {
@@ -86,7 +93,8 @@ impl FluidSolver {
             frame_time: 1.0 / 60.0,
             max_grid_cell_traversal: 10,
             grid_cell_size: 1.0 / (w.min(h) as f64),
-            gravity: (0.0, 0.0)
+            gravity: (0.0, 0.0),
+            interpolation_scheme: InterpolationScheme::RK1
         }
     }
 
@@ -257,9 +265,16 @@ impl FluidSolver {
                 let velocity = Vector::new(self.get_interpolated_quantity(&self.u, position.x, position.y),
                                                   self.get_interpolated_quantity(&self.v, position.x, position.y));
 
-                // Trace backwards using Runge-Kutta order two (RK2) interpolation.
-                // TODO
-                let position_prev = position - velocity * delta_t;
+                // Trace backwards using Runge-Kutta interpolation.
+                let position_prev = match self.interpolation_scheme {
+                  InterpolationScheme::RK1 => position - velocity * delta_t,
+                  InterpolationScheme::RK2 => {
+                      let position_mid = position - 0.5 * velocity * delta_t;
+                      let velocity_mid = Vector::new(self.get_interpolated_quantity(&self.u, position_mid.x, position_mid.y),
+                                                            self.get_interpolated_quantity(&self.v, position_mid.x, position_mid.y));
+                      position_mid - velocity_mid * delta_t
+                  }
+                };
 
                 // Set the value of the fluid quantity in the new buffer.
                 *q_next.get_mut(i, j) = self.get_interpolated_quantity(q, position_prev.x, position_prev.y);
