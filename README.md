@@ -1,13 +1,17 @@
 # Ponyo
 A semi-Lagrangian fluid solver based on Robert Bridson's book, 
-_Fluid Simulation for Computer Graphics (2nd Edition)_.
+_Fluid Simulation for Computer Graphics (2nd Edition)_. This implementation
+uses a staggered marker-and-cell (MAC) grid with second-order Runge Kutta 
+interpolation during the backwards particle trace. Currently, the pressure
+solve is accomplished using the [Gauss-Seidel](https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method) 
+method.
 
 <p>
   <img src="https://github.com/mwalczyk/ponyo/blob/master/logo.svg" alt="plume logo" width="100" height="auto"/>
 </p>
 
 ## Running
-Make sure you have Rust installed. Navigate inside the directory and
+Make sure you have [Rust](https://www.rust-lang.org/en-US/install.html) installed. Navigate inside the directory and
 execute the command: `cargo build --release`. You can then run the application with `cargo run`. There
 are several optional command-line arguments that can be used to configure the simulation:
 
@@ -26,6 +30,8 @@ OPTIONS:
 
 ```
 
+Note that if you are running the executable via `cargo`, you must place an additional
+set of hyphens before any command-line arguments. For example: `cargo run -- -o /renders`.
 ## Dependencies
 Ponyo uses the following crates:
 ```
