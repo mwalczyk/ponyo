@@ -16,16 +16,9 @@ use fluid_solver::FluidSolver;
 use pbr::ProgressBar;
 use clap::{Arg, App, SubCommand};
 
-// TODO:
-// https://en.wikipedia.org/wiki/Stencil_code
-// http://developer.download.nvidia.com/books/HTML/gpugems/gpugems_ch38.html
-
 const ADD_FLUID_EVERY: usize = 500;
 
 fn main() {
-    let sp = render::shader_program::ShaderProgram { id: 32 };
-    sp.test();
-
     // Parse command-line arguments.
     let matches = App::new("Ponyo")
         .version("1.0")
@@ -54,8 +47,6 @@ fn main() {
             .use_delimiter(true)
             .value_delimiter("x")
         ).get_matches();
-
-    let v = Arg::with_name("v");
 
     // Print the final program arguments.
     let output_directory = matches.value_of("output_directory").unwrap_or("images");

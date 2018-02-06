@@ -160,26 +160,26 @@ impl FluidSolver {
     /// In other words, `x` = `y` = 0.0 refers to the center of the cell in the
     /// bottom-left corner of the grid.
     fn get_interpolated_quantity(&self, q: &FluidQuantity, mut x: f64, mut y: f64) -> f64 {
-        // Clamp
+        // Clamp the coordinates onto the grid domain.
         x = x.max(0.0).min((self.w - 2) as f64);
         y = y.max(0.0).min((self.h - 2) as f64);
 
         let mut oi = x - x.floor();
         let mut oj = y - y.floor();
 
-        // The (integer) indices of the grid cell
+        // Calculate the (integer) indices of the grid cell.
         let mut i = x.floor() as usize;
         let mut j = y.floor() as usize;
 
-        // Fluid quantities that are staggered must be correctly handled here
+        // Fluid quantities that are staggered must be correctly handled here.
         match q.staggered {
             Staggered::OffsetX => oi += 0.5,
             Staggered::OffsetY => oj += 0.5,
             _ => ()
         }
 
-        // Bilinear interpolation of the fluid quantity via the four surrounding
-        // grid cells:
+        // Bilinear interpolation of the fluid quantity via the four
+        // surrounding grid cells:
         //
         //             |
         //      x_01   |   x_11
@@ -291,8 +291,8 @@ impl FluidSolver {
         // since we are performing linear/bilinear/trilinear
         // interpolations.
         //
-        // Advection cannot happen in-place: we need to create new buffers
-        // and swap them.
+        // Advection cannot happen in-place: we need to create new
+        // buffers and swap them.
         self.u = self.advect_quantity(delta_t, &self.u);
         self.v = self.advect_quantity(delta_t, &self.v);
         self.dye = self.advect_quantity(delta_t, &self.dye);
@@ -311,6 +311,10 @@ impl FluidSolver {
     /// Build the right-hand side of pressure equation.
     fn build_rhs(&mut self) {
         let scale = 1.0 / self.grid_cell_size;
+
+        // Technically, we only need to do this calculation for cells that
+        // contain fluid. Since we aren't currently using markers, we just
+        // iterate over the entire field.
         for i in 0..self.w {
             for j in 0..self.h {
                 // Calculate the divergence of the velocity field at (i, j).
@@ -328,38 +332,65 @@ impl FluidSolver {
     /// Project using the Gauss-Seidel method, which is an iterative
     /// approach to solving systems of linear equations.
     fn solve_pressure(&mut self, delta_t: f64, tolerance: f64, max_iterations: usize) {
-        let scale = delta_t / (self.density * self.grid_cell_size * self.grid_cell_size);
+        let delta_x_squared = self.grid_cell_size * self.grid_cell_size;
+        let scale = delta_t / (self.density * delta_x_squared);
+
         let mut max_delta = 0.0_f64;
-        for iter in 0..max_iterations {
 
+        for _ in 0..max_iterations {
             max_delta = 0.0;
-
             for i in 0..self.w {
                 for j in 0..self.h {
-                    let mut diag = 0.0;
-                    let mut off_diag = 0.0;
+                    let mut diagonal = 0.0;
+                    let mut off_diagonal = 0.0;
 
+                    // In this function, we are essentially solving an equation
+                    // `Ap = b`, where `p` contains the unknown pressure at each
+                    // grid cell location.
+                    //
+                    // First, we assemble the coefficients for the row of `A`
+                    // corresponding to cell (i, j). Note that because each cell
+                    // has at most 4 neighbors, `A` will be extremely sparse.
+                    //
+                    // The entry corresponding to p(i, j) will have a coefficient
+                    // of the form:
+                    //
+                    //          [Δt / (ρ * Δx * Δx)] * n
+                    //
+                    // where `n` is the number of neighboring cells that contain
+                    // either fluid or air. This entry would appear along the
+                    // diagonal of the matrix `A`, which is why we accumulate
+                    // this value in a variable named `diag`.
+                    //
+                    // Entries corresponding to the cells neighboring cell (i, j)
+                    // will have coefficients of the form:
+                    //
+                    //          -[Δt / (ρ * Δx * Δx)]
+                    //
+                    // For now, we assume that all solid boundaries are stationary.
+
+                    // Check if this cell is on the left, vertical edge.
                     if i > 0 {
-                        diag += scale;
-                        off_diag -= scale * self.p.get(i - 1, j);
+                        diagonal += scale;
+                        off_diagonal -= scale * self.p.get(i - 1, j);
                     }
-
+                    // Check if this cell is on the bottom, horizontal edge.
                     if j > 0 {
-                        diag += scale;
-                        off_diag -= scale * self.p.get(i, j - 1);
+                        diagonal += scale;
+                        off_diagonal -= scale * self.p.get(i, j - 1);
                     }
-
+                    // Check if this cell is on the right, vertical edge.
                     if i < (self.w - 1) {
-                        diag += scale;
-                        off_diag -= scale * self.p.get(i + 1, j);
+                        diagonal += scale;
+                        off_diagonal -= scale * self.p.get(i + 1, j);
                     }
-
+                    // Check if this cell is on the top, horizontal edge.
                     if j < (self.h - 1) {
-                        diag += scale;
-                        off_diag -= scale * self.p.get(i, j + 1);
+                        diagonal += scale;
+                        off_diagonal -= scale * self.p.get(i, j + 1);
                     }
 
-                    let p_next = (self.rhs.get(i, j) - off_diag) / diag;
+                    let p_next = (self.rhs.get(i, j) - off_diagonal) / diagonal;
 
                     // Can we exit the solver?
                     let abs_diff = (self.p.get(i, j) - p_next).abs();
@@ -371,7 +402,6 @@ impl FluidSolver {
             }
 
             if max_delta < tolerance {
-                //println!("Exiting solver after {} iterations, maximum change is: {}", iter, max_delta);
                 break;
             }
         }
