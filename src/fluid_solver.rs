@@ -1,11 +1,9 @@
-extern crate image;
-
 use std::f64;
 
 use helpers::{Vector, lerp};
 use fluid_quantity::{Staggered, FluidQuantity};
 
-use image::{GenericImage, ImageBuffer};
+use image::{self, GenericImage, ImageBuffer};
 
 pub enum InterpolationScheme {
     /// First-order Runge Kutta interpolation

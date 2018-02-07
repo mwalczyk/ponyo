@@ -1,5 +1,3 @@
-use helpers::Vector;
-
 #[derive(Copy, Clone)]
 pub enum Staggered {
     /// The quantity is sampled at the center the grid cells
