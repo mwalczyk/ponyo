@@ -416,6 +416,8 @@ impl FluidSolver {
                 }
             }
 
+            // If none of the values drastically changed, we exit
+            // the outer loop.
             if max_delta < tolerance {
                 break;
             }

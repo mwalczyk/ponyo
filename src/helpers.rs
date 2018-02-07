@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Mul};
+use std::ops::{Add, Sub, Mul, Div};
 
 #[derive(Copy, Clone)]
 pub struct Vector {
@@ -19,16 +19,18 @@ impl Vector {
         Vector::new(0.0, 0.0)
     }
 
+    pub fn length_squared(&self) -> f64 { self.x * self.x + self.y * self.y }
+
     pub fn length(&self) -> f64 {
-        (self.x * self.x + self.y * self.y).sqrt()
+        self.length_squared().sqrt()
     }
 
     pub fn dot(&self, other: &Vector) -> f64 {
         self.x * other.x + self.y * other.y
     }
 
-    pub fn distance(&self, b: Vector) -> f64 {
-        (*self - b).length()
+    pub fn distance(&self, other: &Vector) -> f64 {
+        (*self - *other).length()
     }
 }
 
@@ -56,6 +58,15 @@ impl Mul<f64> for Vector {
 
     fn mul(self, scalar: f64) -> Vector {
         Vector::new(self.x * scalar, self.y * scalar)
+    }
+}
+
+// Vector-scalar division
+impl Div<f64> for Vector {
+    type Output = Vector;
+
+    fn div(self, scalar: f64) -> Vector {
+        Vector::new(self.x / scalar, self.y / scalar)
     }
 }
 
