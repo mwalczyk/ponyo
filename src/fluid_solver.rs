@@ -94,7 +94,7 @@ impl FluidSolver {
             max_grid_cell_traversal: 10,
             grid_cell_size: 1.0 / (w.min(h) as f64),
             gravity: (0.0, 0.0),
-            interpolation_scheme: InterpolationScheme::RK1
+            interpolation_scheme: InterpolationScheme::RK2
         }
     }
 
