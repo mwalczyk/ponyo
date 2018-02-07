@@ -269,7 +269,7 @@ impl FluidSolver {
                 let position_prev = match self.interpolation_scheme {
                   InterpolationScheme::RK1 => position - velocity * delta_t,
                   InterpolationScheme::RK2 => {
-                      let position_mid = position - 0.5 * velocity * delta_t;
+                      let position_mid = position - velocity * delta_t * 0.5;
                       let velocity_mid = Vector::new(self.get_interpolated_quantity(&self.u, position_mid.x, position_mid.y),
                                                             self.get_interpolated_quantity(&self.v, position_mid.x, position_mid.y));
                       position_mid - velocity_mid * delta_t

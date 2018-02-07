@@ -8,6 +8,7 @@ mod fluid_solver;
 mod render;
 
 use std::env;
+use std::path::Path;
 use std::str::FromStr;
 
 use fluid_quantity::FluidQuantity;
@@ -50,7 +51,12 @@ fn main() {
 
     // Print the final program arguments.
     let output_directory = matches.value_of("output_directory").unwrap_or("images");
-    println!("Setting output directory to: {}", output_directory);
+    if !Path::new(output_directory).exists() {
+        println!("The specified directory {} does not exist - creating a new folder with this name", output_directory);
+        std::fs::create_dir(output_directory);
+    } else {
+        println!("Setting output directory to: {}", output_directory);
+    }
 
     let frame_count = usize::from_str(matches.value_of("frame_count").unwrap_or("6000")).unwrap();
     println!("Setting frame count to: {}", frame_count);
