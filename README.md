@@ -1,8 +1,8 @@
 # ponyo
 🌊 A 2D, semi-Lagrangian fluid solver. 
 
-<p>
-  <img src="https://github.com/mwalczyk/ponyo/blob/master/logo.svg" alt="plume logo" width="100" height="auto"/>
+<p align="center">
+  <img src="https://github.com/mwalczyk/ponyo/blob/master/screenshots/fluid.gif" width="200" height="auto"/>
 </p>
 
 ## Description
